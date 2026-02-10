@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Space, Button, Modal, message } from 'antd';
+import { Table, Tag, Space, Button, Modal, message, Rate } from 'antd';
 
 // 假数据 (Mock Data)，等后端好了再换成 fetch 请求
 const mockData = [
-  { id: 1, name: '希尔顿大酒店', address: '北京市朝阳区', price: 800, status: 'approved' },
-  { id: 2, name: '如家快捷酒店', address: '上海市徐汇区', price: 200, status: 'pending' },
+  { 
+    id: 1, 
+    nameCn: '希尔顿大酒店', 
+    nameEn: 'Hilton Hotel', 
+    address: '北京市朝阳区', 
+    star: 5, 
+    openedAt: '2010-05-01',
+    status: 'approved',
+    // 列表页通常不需要展示所有房型，展示一个最低价即可
+    minPrice: 800 
+  },
 ];
 
 const HotelList = () => {
@@ -12,9 +21,30 @@ const HotelList = () => {
 
   // 表格列定义
   const columns = [
-    { title: '酒店名称', dataIndex: 'name', key: 'name' },
-    { title: '地址', dataIndex: 'address', key: 'address' },
-    { title: '价格', dataIndex: 'price', key: 'price', render: (text) => `￥${text}` },
+    { 
+      title: '酒店名称', 
+      key: 'name', 
+      render: (_, record) => (
+        <div>
+          <div style={{ fontWeight: 'bold' }}>{record.nameCn}</div>
+          <div style={{ fontSize: '12px', color: '#888' }}>{record.nameEn}</div>
+        </div>
+      )
+    },
+    { 
+      title: '星级', 
+      dataIndex: 'star', 
+      key: 'star', 
+      render: (star) => <Rate disabled defaultValue={star} style={{ fontSize: 12 }} /> 
+    },
+    { title: '开业时间', dataIndex: 'openedAt', key: 'openedAt' },
+    { title: '地址', dataIndex: 'address', key: 'address', ellipsis: true }, // ellipsis 超长省略
+    { 
+      title: '起步价', 
+      dataIndex: 'minPrice', 
+      key: 'minPrice', 
+      render: (text) => <span style={{ color: 'red', fontWeight: 'bold' }}>￥{text} 起</span> 
+    },
     {
       title: '状态',
       dataIndex: 'status',
