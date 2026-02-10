@@ -1,11 +1,19 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
+
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import AdminLayout from './components/AdminLayout';
 import HotelList from './pages/HotelList';
 import HotelEdit from './pages/HotelEdit';
+
+
+// 封装私有路由组件：未登录则跳登录页
+const PrivateRoute = ({ children }) => {
+  const isLogin = !!localStorage.getItem('token');
+  return isLogin ? children : <Navigate to="/login" />;
+};
 
 function App() {
   return (
