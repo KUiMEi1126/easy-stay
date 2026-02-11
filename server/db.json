@@ -1,0 +1,192 @@
+{
+  "hotels": [
+    {
+      "id": 1,
+      "nameCn": "北京希尔顿大酒店",
+      "nameEn": "Hilton Beijing",
+      "address": "北京市朝阳区建国路88号",
+      "star": 5,
+      "openedAt": "2010-05-01",
+      "rating": 4.8,
+      "tags": ["免费停车", "健身房", "王府井商圈"],
+      "images": [
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
+        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800"
+      ],
+      "rooms": [
+        { "name": "标准大床房", "price": 500, "count": 10 },
+        { "name": "豪华海景房", "price": 880, "count": 5 }
+      ]
+    },
+    {
+      "id": 2,
+      "nameCn": "上海半岛酒店",
+      "nameEn": "The Peninsula Shanghai",
+      "address": "上海市黄浦区中山东一路32号",
+      "star": 5,
+      "rating": 4.9,
+      "openedAt": "2009-10-18",
+      "tags": ["外滩景观", "下午茶", "SPA"],
+      "images": [
+        "https://images.unsplash.com/photo-1551882547-ff43c63faf7c?w=800",
+        "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800"
+      ],
+      "rooms": [
+        { "name": "高级江景房", "price": 2800, "count": 3 },
+        { "name": "特级套房", "price": 5600, "count": 2 }
+      ]
+    },
+    {
+      "id": 3,
+      "nameCn": "杭州西湖雷迪森大酒店",
+      "address": "杭州市下城区延安路333号",
+      "nameEn": "Landison Plaza Hotel",
+      "star": 4,
+      "rating": 4.5,
+      "openedAt": "2012-03-20",
+      "tags": ["近地铁", "西湖周边", "亲子推荐"],
+      "images": [
+        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800",
+        "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800",
+        "https://images.unsplash.com/photo-1591088398332-8a77d399e843?w=800"
+      ],
+      "rooms": [
+        { "name": "温馨大床房", "price": 450, "count": 12 },
+        { "name": "行政双床房", "price": 680, "count": 8 }
+      ]
+    },
+    {
+      "id": 4,
+      "nameCn": "成都尼依格罗酒店",
+      "nameEn": "Niccolo Chengdu",
+      "address": "成都市锦江区红星路三段1号",
+      "star": 5,
+      "rating": 4.7,
+      "openedAt": "2015-04-15",
+      "tags": ["太古里", "网红打卡", "城市高空"],
+      "images": [
+        "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800",
+        "https://images.unsplash.com/photo-1512918766671-ed6a07be061f?w=800",
+        "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800"
+      ],
+      "rooms": [
+        { "name": "N1豪华房", "price": 1200, "count": 6 },
+        { "name": "探索套房", "price": 2300, "count": 3 }
+      ]
+    },
+    {
+      "id": 5,
+      "nameCn": "汉庭酒店北京站店",
+      "nameEn": "Hanting Hotel",
+      "address": "北京市东城区毛家湾胡同甲13号",
+      "star": 2,
+      "rating": 4.1,
+      "openedAt": "2018-11-10",
+      "tags": ["性价比", "干净整洁", "近火车站"],
+      "images": [
+        "https://images.unsplash.com/photo-1505177666879-2651bdc1f5d2?w=800"
+      ],
+      "rooms": [
+        { "name": "经济大床房", "price": 299, "count": 20 },
+        { "name": "双人标准间", "price": 350, "count": 15 }
+      ]
+    },
+    {
+      "id": 6,
+      "nameCn": "三亚亚特兰蒂斯酒店",
+      "nameEn": "Atlantis Sanya",
+      "address": "三亚市海棠湾镇海棠北路",
+      "star": 5,
+      "rating": 4.9,
+      "openedAt": "2018-04-28",
+      "tags": ["水世界", "海底餐厅", "度假天堂"],
+      "images": [
+        "https://images.unsplash.com/photo-1544124499-58912cbddaad?w=800",
+        "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800",
+        "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800",
+        "https://images.unsplash.com/photo-1535827841776-24afc1e255ac?w=800",
+        "https://images.unsplash.com/photo-1521783988139-89397d761dce?w=800"
+      ],
+      "rooms": [
+        { "name": "海景大床房", "price": 2588, "count": 10 },
+        { "name": "尼普顿水底套房", "price": 58888, "count": 1 }
+      ]
+    },
+    {
+      "id": 7,
+      "nameCn": "全季酒店南京新街口店",
+      "nameEn": "JI Hotel Nanjing",
+      "address": "南京市秦淮区中山南路79号",
+      "star": 3,
+      "rating": 4.6,
+      "openedAt": "2016-06-01",
+      "tags": ["简约风", "智能客控", "市中心"],
+      "images": [
+        "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800",
+        "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800"
+      ],
+      "rooms": [
+        { "name": "高级大床房", "price": 420, "count": 14 },
+        { "name": "零压双床房", "price": 480, "count": 10 }
+      ]
+    },
+    {
+      "id": 8,
+      "nameCn": "广州四季酒店",
+      "nameEn": "Four Seasons Hotel Guangzhou",
+      "address": "广州市天河区珠江新城珠江西路5号",
+      "star": 5,
+      "rating": 4.8,
+      "openedAt": "2012-07-23",
+      "tags": ["小蛮腰景观", "云端餐厅", "奢华"],
+      "images": [
+        "https://images.unsplash.com/photo-1517840901100-8179e982acb7?w=800",
+        "https://images.unsplash.com/photo-1561501900-3701fa6a0864?w=800",
+        "https://images.unsplash.com/photo-1444201983204-c43cbd584d93?w=800"
+      ],
+      "rooms": [
+        { "name": "塔景豪华房", "price": 1900, "count": 5 },
+        { "name": "尊贵套房", "price": 3500, "count": 2 }
+      ]
+    },
+    {
+      "id": 9,
+      "nameCn": "西安W酒店",
+      "nameEn": "W Xi'an",
+      "address": "西安市雁塔区曲江池东路333号",
+      "star": 5,
+      "rating": 4.7,
+      "openedAt": "2018-08-20",
+      "tags": ["潮流设计", "电音酒吧", "曲江池旁"],
+      "images": [
+        "https://images.unsplash.com/photo-1596178060671-7a80dc8059ea?w=800",
+        "https://images.unsplash.com/photo-1568495248636-6432b97bd949?w=800",
+        "https://images.unsplash.com/photo-1592110173555-397a441119b4?w=800"
+      ],
+      "rooms": [
+        { "name": "奇妙大床房", "price": 1100, "count": 8 },
+        { "name": "非凡套房", "price": 2100, "count": 4 }
+      ]
+    },
+    {
+      "id": 10,
+      "nameCn": "成都如家驿居酒店",
+      "nameEn": "Homeinn Selected",
+      "address": "成都市成华区建设路东口",
+      "star": 2,
+      "rating": 4.2,
+      "openedAt": "2019-05-12",
+      "tags": ["美食街", "交通便利", "服务周到"],
+      "images": [
+        "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800",
+        "https://images.unsplash.com/photo-1598928636135-d146006ff4be?w=800"
+      ],
+      "rooms": [
+        { "name": "商务大床房", "price": 260, "count": 18 },
+        { "name": "标准双人房", "price": 280, "count": 12 }
+      ]
+    }
+  ]
+}
