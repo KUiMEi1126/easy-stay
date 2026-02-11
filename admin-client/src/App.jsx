@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-
+import Register from './pages/Register.jsx'; // 新增注册页路由
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import AdminLayout from './components/AdminLayout';
@@ -20,8 +20,9 @@ function App() {
     <ConfigProvider locale={zhCN}>{/* 全页中文化 */}
       <BrowserRouter>
         <Routes>
-          {/* 1. 登录页 */}
-          <Route path="/login" element={<Login />} />
+          {/* 1. 登录/注册页 */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
           {/* 2. 管理后台 (包含侧边栏的公共布局) */}
           <Route path="/admin" element={<AdminLayout />}>
