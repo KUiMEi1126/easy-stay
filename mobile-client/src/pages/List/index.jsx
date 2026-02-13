@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, ChevronDown, Loader2, Search, Calendar } from 'lucide-react';
 import { getHotels } from '../../services/api';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import zhCN from 'date-fns/locale/zh-CN';
 
 const List = () => {
   const navigate = useNavigate();
@@ -9,8 +13,38 @@ const List = () => {
   const [loading, setLoading] = useState(true);
   const [sortType, setSortType] = useState('default');
 
+  const location = useLocation();
+  // 解析 URL 参数
+  const params = new URLSearchParams(location.search);
+  const province = params.get('province') || '';
+  const city = params.get('city') || '';
+  const keyword = params.get('keyword') || '';
+  // 优先读取 localStorage 日期
+  const checkin = params.get('checkin') || localStorage.getItem('stayCheckin') || '';
+  const checkout = params.get('checkout') || localStorage.getItem('stayCheckout') || '';
+  const starParam = params.get('star') || '';
+  const tagParam = params.get('tag') || '';
+  const minPrice = params.get('minPrice') || '';
+  const maxPrice = params.get('maxPrice') || '';
+
+  // 顶部筛选状态
+  const [cityInput, setCityInput] = useState(city);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarState, setCalendarState] = useState([{ startDate: checkin ? new Date(checkin) : new Date(), endDate: checkout ? new Date(checkout) : new Date(Date.now()+24*3600*1000), key: 'selection' }]);
+  const [dateRange, setDateRange] = useState({ checkin: checkin || '', checkout: checkout || '', nights: checkin && checkout ? Math.max(1, Math.round((new Date(checkout)-new Date(checkin))/(1000*3600*24))) : parseInt(localStorage.getItem('stayNights')) || 1 });
+  const calendarRef = useRef(null);
+
+  // 详细筛选状态
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterStar, setFilterStar] = useState(starParam);
+  const [filterTag, setFilterTag] = useState(tagParam);
+  const [filterMinPrice, setFilterMinPrice] = useState(minPrice);
+  const [filterMaxPrice, setFilterMaxPrice] = useState(maxPrice);
+  const [allTags, setAllTags] = useState([]);
+
   useEffect(() => {
-    getHotels()
+    setLoading(true);
+    getHotels({ province, city, keyword, checkin, checkout, star: starParam, tag: tagParam, minPrice, maxPrice })
       .then(res => {
         const data = res.success ? res.data : res;
         setHotels(Array.isArray(data) ? data : []);
@@ -18,9 +52,30 @@ const List = () => {
       })
       .catch(err => {
         console.error("加载失败:", err);
+        setHotels([]);
         setLoading(false);
       });
+  }, [location.search]);
+
+  // 获取全部 tags 用于详细筛选展示
+  useEffect(() => {
+    getHotels().then(res => {
+      const data = res.success ? res.data : res;
+      const hotelsAll = Array.isArray(data) ? data : [];
+      const tagSet = new Set();
+      hotelsAll.forEach(h => { if (Array.isArray(h.tags)) h.tags.forEach(t => tagSet.add(t)); });
+      setAllTags(Array.from(tagSet));
+    }).catch(()=>{});
   }, []);
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!showCalendar) return;
+      if (calendarRef.current && !calendarRef.current.contains(e.target)) setShowCalendar(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [showCalendar]);
 
   const sortedHotels = [...hotels].sort((a, b) => {
     if (sortType === 'price_asc') {
@@ -28,8 +83,63 @@ const List = () => {
       const minB = Math.min(...b.rooms.map(r => r.price));
       return minA - minB;
     }
+    if (sortType === 'address_asc') {
+      return (a.address || '').localeCompare(b.address || '');
+    }
     return 0;
   });
+  // 根据省份优先展示：将包含 province 的酒店排到前面
+  let finalHotels = sortedHotels;
+  if (province) {
+    const provinceHotels = sortedHotels.filter(h => h.address && h.address.includes(province));
+    const otherHotels = sortedHotels.filter(h => !(h.address && h.address.includes(province)));
+    finalHotels = provinceHotels.length > 0 ? [...provinceHotels, ...otherHotels] : sortedHotels;
+  }
+
+  // 日历选择
+  const handleDateChange = (ranges) => {
+    const { startDate, endDate } = ranges.selection;
+    const nights = Math.max(1, Math.round((endDate - startDate)/(1000*3600*24)));
+    setCalendarState([ranges.selection]);
+    setDateRange({ checkin: startDate.toISOString().slice(0,10), checkout: endDate.toISOString().slice(0,10), nights });
+    // 保存到 localStorage
+    try {
+      localStorage.setItem('stayCheckin', startDate.toISOString().slice(0,10));
+      localStorage.setItem('stayCheckout', endDate.toISOString().slice(0,10));
+      localStorage.setItem('stayNights', nights);
+    } catch(e) {}
+  };
+
+  // 搜索与筛选
+    const handleApplySearch = () => {
+      const params = new URLSearchParams();
+      if (province) params.set('province', province);
+      // 城市/地标输入作为 keyword 搜索
+      // 只用 cityInput 作为 keyword，避免覆盖
+      if (cityInput) {
+        params.set('keyword', cityInput);
+      } else if (keyword) {
+        params.set('keyword', keyword);
+      }
+      if (dateRange.checkin) params.set('checkin', dateRange.checkin);
+      if (dateRange.checkout) params.set('checkout', dateRange.checkout);
+      if (filterStar) params.set('star', filterStar);
+      if (filterTag) params.set('tag', filterTag);
+      if (filterMinPrice) params.set('minPrice', filterMinPrice);
+      if (filterMaxPrice) params.set('maxPrice', filterMaxPrice);
+      // 搜索时同步保存日期
+      try {
+        localStorage.setItem('stayCheckin', dateRange.checkin);
+        localStorage.setItem('stayCheckout', dateRange.checkout);
+        localStorage.setItem('stayNights', dateRange.nights);
+      } catch(e) {}
+      navigate(`/list?${params.toString()}`);
+    };
+
+  const clearFilters = () => {
+    setFilterStar(''); setFilterTag(''); setFilterMinPrice(''); setFilterMaxPrice('');
+    setShowFilters(false);
+  };
 
   if (loading) {
     return (
@@ -42,24 +152,78 @@ const List = () => {
 
   return (
     <div style={{ backgroundColor: '#f5f7f9', minHeight: '100vh' }}>
-      <div style={{ position: 'sticky', top: 0, background: 'white', zIndex: 100, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 15px' }}>
+      {/* 顶部核心条件筛选头 */}
+      <div style={{ position: 'sticky', top: 0, background: 'white', zIndex: 110, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', paddingBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '10px 12px' }}>
           <ArrowLeft onClick={() => navigate('/')} style={{ cursor: 'pointer' }} />
-          <div style={{ flex: 1, textAlign: 'center', fontWeight: 'bold', fontSize: '17px' }}>北京酒店列表</div>
+          <div style={{ flex: 1, textAlign: 'center', fontWeight: 'bold', fontSize: '16px' }}>{province ? province + ' 酒店列表' : '酒店列表'}</div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-around', padding: '10px 0', fontSize: '14px', color: '#666', borderTop: '1px solid #f0f0f0' }}>
-          <div 
-            onClick={() => setSortType(sortType === 'price_asc' ? 'default' : 'price_asc')} 
-            style={{ color: sortType === 'price_asc' ? '#0086F6' : '#666', display: 'flex', alignItems: 'center', fontWeight: sortType === 'price_asc' ? 'bold' : 'normal' }}
-          >
-            价格最低 <ChevronDown size={14} />
+
+        <div style={{ display: 'flex', gap: 8, padding: '8px 12px', alignItems: 'center' }}>
+          <input value={cityInput} onChange={e => setCityInput(e.target.value)} placeholder="城市/地标" style={{ flex: 1, padding: '8px', borderRadius: 8, border: '1px solid #eee' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', padding: '8px', borderRadius: 8, border: '1px solid #eee', cursor: 'pointer' }} onClick={() => setShowCalendar(v=>!v)}>
+              <Calendar size={16} />
+              <div style={{ marginLeft: 8, fontSize: 13 }}>{dateRange.checkin ? `${dateRange.checkin} - ${dateRange.checkout}` : '选择日期'}</div>
+            </div>
+            <button onClick={handleApplySearch} style={{ background: '#0086F6', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 8 }}>搜索</button>
           </div>
-          <div>星级筛选 <ChevronDown size={14} /></div>
         </div>
+
+        {showCalendar && (
+          <div ref={calendarRef} style={{ padding: 12 }}>
+            <DateRange
+              editableDateInputs={true}
+              onChange={handleDateChange}
+              moveRangeOnFirstSelection={false}
+              ranges={calendarState}
+              months={1}
+              direction="horizontal"
+              minDate={new Date()}
+              locale={zhCN}
+            />
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px 12px' }}>
+          <div style={{ color: '#666', fontSize: 13 }}>{dateRange.nights ? `共 ${dateRange.nights} 晚` : ''}</div>
+          <div>
+            <button onClick={() => setShowFilters(v=>!v)} style={{ background: 'transparent', border: 'none', color: '#0086F6' }}>{showFilters ? '收起筛选' : '更多筛选'}</button>
+          </div>
+        </div>
+
+        {/* 详细筛选区域 */}
+        {showFilters && (
+          <div style={{ padding: '8px 12px 14px', borderTop: '1px solid #f0f0f0' }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <select value={filterStar} onChange={e=>setFilterStar(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #eee' }}>
+                <option value="">星级不限</option>
+                <option value="5">五星</option>
+                <option value="4">四星</option>
+                <option value="3">三星</option>
+                <option value="2">二星</option>
+              </select>
+              <select value={filterTag} onChange={e=>setFilterTag(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #eee' }}>
+                <option value="">全部标签</option>
+                {allTags.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+              <input placeholder="最低价" value={filterMinPrice} onChange={e=>setFilterMinPrice(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #eee', width: 120 }} />
+              <input placeholder="最高价" value={filterMaxPrice} onChange={e=>setFilterMaxPrice(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #eee', width: 120 }} />
+              <div style={{ marginLeft: 'auto' }}>
+                <button onClick={clearFilters} style={{ marginRight: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #eee' }}>清空</button>
+                <button onClick={handleApplySearch} style={{ padding: '8px 12px', borderRadius: 8, background: '#0086F6', color: '#fff' }}>应用</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* 酒店列表 */}
       <div style={{ padding: '12px' }}>
-        {sortedHotels.map(hotel => (
+        {finalHotels.map(hotel => (
           <div 
             key={hotel.id} 
             onClick={() => navigate(`/detail/${hotel.id}`)}

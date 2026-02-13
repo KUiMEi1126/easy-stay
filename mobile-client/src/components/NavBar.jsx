@@ -9,7 +9,7 @@ const NavBar = () => {
   const menuItems = [
     { name: '首页', icon: <Home size={20}/>, path: '/' },
     { name: '列表', icon: <ListIcon size={20}/>, path: '/list' },
-    { name: '我的', icon: <User size={20}/>, path: '/user' }
+    { name: '我的', icon: <User size={20}/>, path: '/my' }
   ];
 
   return (
