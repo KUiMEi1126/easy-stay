@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import List from './pages/List';
 import Detail from './pages/Detail';
+import My from './pages/My';
 import NavBar from './components/NavBar';
 
 function App() {
@@ -11,8 +12,9 @@ function App() {
       <div style={{ minHeight: '100vh', backgroundColor: '#f5f7f9' }}>
         <Routes>
           <Route path="/" element={<Home />} />
-         <Route path="/list" element={<List />} />
-         <Route path="/detail/:id" element={<Detail />} />
+          <Route path="/list" element={<List />} />
+          <Route path="/detail/:id" element={<Detail />} />
+          <Route path="/my" element={<My />} />
         </Routes>
         
         {/* 底部导航栏，常驻显示 */}
