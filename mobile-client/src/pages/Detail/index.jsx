@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share2, MapPin, Star } from 'lucide-react';
+import { ArrowLeft, Share2, MapPin, Star, Calendar } from 'lucide-react';
 import { getHotelById } from '../../services/api';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import zhCN from 'date-fns/locale/zh-CN';
 
 // 引入 Swiper 组件和样式
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -13,17 +17,40 @@ const Detail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [hotel, setHotel] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarState, setCalendarState] = useState([
+    { 
+      startDate: new Date(), 
+      endDate: new Date(Date.now() + 24 * 3600 * 1000), 
+      key: 'selection' 
+    }
+  ]);
+  const [dateRange, setDateRange] = useState({
+    checkin: new Date().toISOString().slice(0, 10),
+    checkout: new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 10),
+    nights: 1
+  });
 
   // 1. 获取后端数据
   useEffect(() => {
     getHotelById(id)
       .then(res => {
-        // 根据你后端的返回结构，可能是 res.data 或直接是 res
         const hotelData = res.success ? res.data : res;
         setHotel(hotelData);
       })
       .catch(err => console.error("获取详情失败:", err));
   }, [id]);
+
+  const handleDateChange = (ranges) => {
+    const { startDate, endDate } = ranges.selection;
+    const nights = Math.max(1, Math.round((endDate - startDate) / (1000 * 3600 * 24)));
+    setCalendarState([ranges.selection]);
+    setDateRange({
+      checkin: startDate.toISOString().slice(0, 10),
+      checkout: endDate.toISOString().slice(0, 10),
+      nights
+    });
+  };
 
   if (!hotel) return <div style={{ padding: '50px', textAlign: 'center', color: '#999' }}>加载详情中...</div>;
 
@@ -99,8 +126,36 @@ const Detail = () => {
           {Array.from({ length: hotel.star || 5 }).map((_, i) => (
             <Star key={i} size={14} fill="#ffb400" color="#ffb400" />
           ))}
-          <span style={{ color: '#999', fontSize: '13px', marginLeft: '10px' }}>详情/设施 &gt;</span>
         </div>
+      </div>
+
+      {/* --- 日期选择 Banner --- */}
+      <div style={{ margin: '10px 15px', background: 'white', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setShowCalendar(!showCalendar)}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>入住日期</div>
+            <div style={{ fontSize: '16px', color: '#333', fontWeight: 'bold' }}>{dateRange.checkin} - {dateRange.checkout}</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '12px', color: '#0086F6', fontWeight: 'bold' }}>{dateRange.nights} 晚</div>
+            <Calendar size={20} color="#0086F6" />
+          </div>
+        </div>
+
+        {showCalendar && (
+          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f0f0f0' }}>
+            <DateRange
+              editableDateInputs={true}
+              onChange={handleDateChange}
+              moveRangeOnFirstSelection={false}
+              ranges={calendarState}
+              months={1}
+              direction="horizontal"
+              minDate={new Date()}
+              locale={zhCN}
+            />
+          </div>
+        )}
       </div>
 
       {/* --- 房型列表区域 --- */}
@@ -109,12 +164,9 @@ const Detail = () => {
           fontSize: '16px', 
           borderLeft: '4px solid #0086F6', 
           paddingLeft: '10px',
-          marginBottom: '15px',
-          display: 'flex',
-          justifyContent: 'space-between'
+          marginBottom: '15px'
         }}>
-          预订房型 
-          <span style={{ fontSize: '12px', color: '#999', fontWeight: 'normal' }}>价格升序排列</span>
+          预订房型
         </h3>
 
         {sortedRooms.map((room, index) => (
