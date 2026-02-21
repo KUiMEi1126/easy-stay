@@ -12,7 +12,7 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-const UNKNOWN_PROVINCE = 'UNKNOWN';
+const UNKNOWN_PROVINCE = 'DEFAULT';
 const provincesList = [
   '北京','上海','天津','重庆','河北','山西','辽宁','吉林','黑龙江',
   '江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南',
@@ -227,7 +227,7 @@ const Home = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ fontSize: 18, fontWeight: 600 }}>
             <select value={province} onChange={handleProvinceChange} style={{ fontSize: 16, border: 'none', background: 'transparent', outline: 'none' }}>
-              <option value={UNKNOWN_PROVINCE}>未知地点</option>
+              <option value={UNKNOWN_PROVINCE}>默认</option>
               {provincesList.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>

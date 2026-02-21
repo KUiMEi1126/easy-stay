@@ -16,7 +16,7 @@ router.get('/', (req, res) => {
         let list = [...db.hotels];
 
         // 筛选参数
-        const { sort, star, keyword, minPrice, maxPrice, tag, province, checkin, checkout } = req.query;
+        const { sort, star, keyword, minPrice, maxPrice, tag, province, city, checkin, checkout } = req.query;
 
         // 省份到主要城市映射（用于省份选择能匹配到省内城市）
         const provinceCities = {
@@ -60,15 +60,36 @@ router.get('/', (req, res) => {
             list = list.filter(h => h.star === parseInt(star));
         }
 
-        // 关键词筛选（支持nameCn、nameEn、address、tags）
+        // 城市筛选（地址中包含城市）
+        if (city && city.trim()) {
+            const c = city.trim().toLowerCase();
+            list = list.filter(h => (h.address || '').toLowerCase().includes(c));
+        }
+
+        // 关键词筛选（支持nameCn、nameEn、address、tags），支持多城市组合关键词
         if (keyword && keyword.trim()) {
-            const kw = keyword.trim().toLowerCase();
-            list = list.filter(h =>
-                (h.nameCn && h.nameCn.toLowerCase().includes(kw)) ||
-                (h.nameEn && h.nameEn.toLowerCase().includes(kw)) ||
-                (h.address && h.address.toLowerCase().includes(kw)) ||
-                (Array.isArray(h.tags) && h.tags.some(t => t.toLowerCase().includes(kw)))
-            );
+            const kwList = keyword
+                .trim()
+                .toLowerCase()
+                .split(/[-—、\s]+/)
+                .map(s => s.trim())
+                .filter(Boolean);
+
+            list = list.filter(h => {
+                const nameCn = (h.nameCn || '').toLowerCase();
+                const nameEn = (h.nameEn || '').toLowerCase();
+                const address = (h.address || '').toLowerCase();
+                const tags = Array.isArray(h.tags) ? h.tags.map(t => t.toLowerCase()) : [];
+
+                if (kwList.length === 0) return true;
+
+                return kwList.some(kw =>
+                    nameCn.includes(kw) ||
+                    nameEn.includes(kw) ||
+                    address.includes(kw) ||
+                    tags.some(t => t.includes(kw))
+                );
+            });
         }
 
         // 标签筛选（只返回包含该tag的酒店）
@@ -91,12 +112,11 @@ router.get('/', (req, res) => {
             });
         }
 
-        // 省份匹配优先逻辑：将匹配省份/省内城市的酒店判为 matched，其他为 others
-        let matched = [];
-        let others = [];
+        // 省份匹配逻辑：只返回匹配省份/省内城市的酒店
         if (province && province.trim()) {
             const prov = province.trim();
             const cities = provinceCities[prov] || [];
+            const matched = [];
             for (const h of list) {
                 const addr = (h.address || '').toString();
                 let isMatch = false;
@@ -106,12 +126,9 @@ router.get('/', (req, res) => {
                         if (addr.includes(c)) { isMatch = true; break; }
                     }
                 }
-                if (isMatch) matched.push(h); else others.push(h);
+                if (isMatch) matched.push(h);
             }
-            // 如果有匹配项，则按优先级合并（matched 在前），但不要在此处直接截断列表——分页时会特殊处理
-            if (matched.length > 0) {
-                list = [...matched, ...others];
-            }
+            list = matched;
         }
 
         // 排序
@@ -125,24 +142,7 @@ router.get('/', (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
         const total = list.length;
-        let pagedList = [];
-
-        // 如果传了 province 且存在 matched/others，则对第一页做混合显示：
-        // 保证第一页既展示优先匹配的酒店，也至少包含若干其他城市酒店以避免只显示单一省份
-        if (province && province.trim() && matched.length > 0) {
-            if (page === 1) {
-                const reserveOthers = Math.min(2, others.length); // 在第一页保留 0-2 个非匹配酒店作为示例
-                const takeMatched = Math.min(matched.length, pageSize - reserveOthers);
-                const takeOthers = pageSize - takeMatched;
-                pagedList = [...matched.slice(0, takeMatched), ...others.slice(0, takeOthers)];
-            } else {
-                // 后续页面按合并后顺序继续分页
-                const fullList = [...matched, ...others];
-                pagedList = fullList.slice((page - 1) * pageSize, page * pageSize);
-            }
-        } else {
-            pagedList = list.slice((page - 1) * pageSize, page * pageSize);
-        }
+        const pagedList = list.slice((page - 1) * pageSize, page * pageSize);
 
         res.json({
             success: true,
