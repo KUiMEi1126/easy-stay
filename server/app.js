@@ -11,6 +11,8 @@ app.use(cors());
 // 注册 API 路由（假设存在 routes/user.js）
 const userRouter = require('./routes/user');
 app.use('/api/user', userRouter);
+const hotelRouter = require('./routes/hotel');
+app.use('/api/hotel', hotelRouter);
 
 // 仅在 admin-client 已 build 时静态托管并做 SPA 回退
 const distPath = path.join(__dirname, '..', 'admin-client', 'dist');
