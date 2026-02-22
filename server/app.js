@@ -1,30 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-
 const app = express();
+const hotelRouter = require('./routes/hotel');
 
-app.use(express.json());
-app.use(cors());
+app.use(cors()); // 允许前端访问
+app.use(express.json()); // 解析 JSON 请求体
 
-// 注册 API 路由（假设存在 routes/user.js）
-const userRouter = require('./routes/user');
-app.use('/api/user', userRouter);
+// 挂载路由
+app.use('/api/hotel', hotelRouter);
 
-// 仅在 admin-client 已 build 时静态托管并做 SPA 回退
-const distPath = path.join(__dirname, '..', 'admin-client', 'dist');
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-} else {
-  // 未构建前端时，提供根路径用于快速检测 API 是否可达，避免浏览器误打开后端出现 "Cannot GET /"
-  app.get('/', (req, res) => {
-    res.json({ status: 'ok', message: 'API running' });
-  });
-}
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`server run on ${PORT}`));
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`后端服务已启动: http://localhost:${PORT}`);
+});

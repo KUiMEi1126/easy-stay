@@ -6,9 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5174, // 移动端用 5173，PC端可以改成 5174 防止冲突
-    allowedHosts: [
-      '30109e1a.r6.cpolar.cn'  
-    ],
     proxy: {
       '/api': {
         target: 'http://localhost:3000', // 后端地址

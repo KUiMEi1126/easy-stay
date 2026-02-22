@@ -8,32 +8,42 @@ const Register = () => {
   const [form] = Form.useForm();
 
   // 注册提交逻辑：新增身份存储
-  const onFinish = async (values) => {
+  const onFinish = (values) => {
     const { username, password, confirmPassword, email, identity } = values;
-
+    
+    // 1. 校验两次密码一致
     if (password !== confirmPassword) {
       message.error('两次输入的密码不一致！');
       return;
     }
 
-    try {
-      const resp = await fetch('/api/user/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, email, identity })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        message.error(data.message || '注册失败');
-        return;
-      }
+    // 2. 读取已注册的用户（localStorage 中 key 为 "registeredUsers"）
+    const existingUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
 
-      message.success('注册成功！请登录');
-      form.resetFields();
-      setTimeout(() => navigate('/login'), 1200);
-    } catch (err) {
-      message.error('注册失败：' + err.message);
+    // 3. 校验用户名是否已存在
+    const isUsernameExist = existingUsers.some(user => user.username === username);
+    if (isUsernameExist) {
+      message.error('用户名已存在！请更换用户名');
+      return;
     }
+
+    // 4. 新增用户（包含身份信息）并写入 localStorage
+    const newUser = { 
+      username, 
+      password, 
+      email, 
+      identity, // 新增：商户/管理员
+      createTime: new Date().toLocaleString() 
+    };
+    existingUsers.push(newUser);
+    localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+
+    // 5. 注册成功提示并跳转登录页
+    message.success('注册成功！请登录');
+    form.resetFields(); // 清空表单
+    setTimeout(() => {
+      navigate('/login');
+    }, 1500);
   };
 
   // 返回登录页
@@ -108,7 +118,7 @@ const Register = () => {
         >
           <Select 
             placeholder="请选择身份" 
-            //defaultValue="merchant"
+            defaultValue="merchant"
             // 去掉 prefix 属性（v5+ 废弃），如需图标用 renderOption 或 addonBefore
             style={{ width: '100%' }} // 加宽度保证布局美观
           >
