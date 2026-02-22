@@ -1,4 +1,22 @@
 {
+  "users": [
+    {
+      "id": 1771736729338,
+      "username": "shinku",
+      "password": "123456",
+      "email": "",
+      "identity": "merchant",
+      "createTime": "2026-02-22T05:05:29.338Z"
+    },
+    {
+      "id": 1771738939355,
+      "username": "test",
+      "password": "111111",
+      "email": "",
+      "identity": "admin",
+      "createTime": "2026-02-22T05:42:19.355Z"
+    }
+  ],
   "hotels": [
     {
       "id": 1,
