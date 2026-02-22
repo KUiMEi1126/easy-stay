@@ -10,53 +10,49 @@ const Login = () => {
   const [rememberChecked, setRememberChecked] = useState(true);
 
   // 登录核心逻辑：校验账号+密码+身份，按身份跳转
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     const { username, password, remember } = values;
-    console.log('登录输入:', values);
 
-    // 1. 读取localStorage中所有注册用户
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+    try {
+      const resp = await fetch('/api/user/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        message.error(data.message || '用户名或密码错误！');
+        return;
+      }
 
-    // 2. 校验用户名+密码是否匹配（匹配时会拿到用户的身份信息）
-    const matchedUser = registeredUsers.find(
-      user => user.username === username && user.password === password
-    );
-
-    if (matchedUser) {
-      // 3. 登录成功：保存状态 + 记录当前用户身份
+      const matchedUser = data.user;
       const identityText = matchedUser.identity === 'admin' ? '管理员' : '商户';
       message.success(`登录成功！欢迎${identityText}：${username}`);
-      
-      // 保存登录态（供后台布局判断身份）
-      localStorage.setItem('token', 'real-token-' + username); 
+
+      localStorage.setItem('token', 'real-token-' + username);
       localStorage.setItem('lastLoginUsername', username);
       localStorage.setItem('currentUserIdentity', matchedUser.identity);
 
-      // 4. 处理“记住我”逻辑（包含身份信息）
+      // 记住我逻辑（仍保存在 localStorage，但用户数据来自服务端）
       const rememberedUserInfo = JSON.parse(localStorage.getItem('rememberedUserInfo')) || {};
       if (remember) {
-        rememberedUserInfo[username] = { 
-          password, 
-          remember: true, 
-          identity: matchedUser.identity 
+        rememberedUserInfo[username] = {
+          password,
+          remember: true,
+          identity: matchedUser.identity
         };
       } else {
-        // 取消记住我：删除该用户的缓存
-        if (rememberedUserInfo[username]) {
-          delete rememberedUserInfo[username];
-        }
+        if (rememberedUserInfo[username]) delete rememberedUserInfo[username];
       }
       localStorage.setItem('rememberedUserInfo', JSON.stringify(rememberedUserInfo));
 
-      // 5. 按身份跳转（核心：管理员→HotelList，商户→HotelEdit）
       if (matchedUser.identity === 'admin') {
-        navigate('/admin/hotels'); // 管理员跳酒店列表（HotelList.jsx）
+        navigate('/admin/hotels');
       } else {
-        navigate('/admin/hotel-edit'); // 商户跳酒店编辑（HotelEdit.jsx）
+        navigate('/admin/hotel-edit');
       }
-    } else {
-      // 6. 登录失败提示
-      message.error('用户名或密码错误！');
+    } catch (err) {
+      message.error('登录失败：' + err.message);
     }
   };
 
