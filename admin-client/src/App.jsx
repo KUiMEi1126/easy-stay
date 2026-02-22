@@ -6,8 +6,9 @@ import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import AdminLayout from './components/AdminLayout';
 import HotelList from './pages/HotelList';
-import HotelEdit from './pages/HotelEdit';
-
+import HotelDetail from './pages/HotelDetail'; 
+import MerchantHotelView from './pages/MerchantHotelView';
+import MerchantHotelEdit from './pages/MerchantHotelEdit';
 
 // 封装私有路由组件：未登录则跳登录页
 const PrivateRoute = ({ children }) => {
@@ -27,13 +28,16 @@ function App() {
           {/* 2. 管理后台 (包含侧边栏的公共布局) */}
           <Route path="/admin" element={<AdminLayout />}>
             {/* 默认跳转到酒店列表 */}
-            <Route index element={<Navigate to="/admin/hotels" />} />
             
-            {/* 酒店列表 (审核/下线) */}
             <Route path="hotels" element={<HotelList />} />
+            <Route path="hotel/:id" element={<HotelDetail />} />
+            {/* --- 新增：商户端路由 --- */}
+    
+            {/* 1. 查看我的酒店 */}
+            <Route path="my-hotel" element={<MerchantHotelView />} />
             
-            {/* 酒店录入 (发布/修改) */}
-            <Route path="hotel-edit" element={<HotelEdit />} />
+            {/* 2. 编辑/录入酒店 (这里复用一个路由即可，新建和编辑都在这) */}
+            <Route path="hotel-edit" element={<MerchantHotelEdit />} />
           </Route>
 
           {/* 3. 默认重定向到登录 */}

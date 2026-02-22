@@ -15,6 +15,14 @@
       "email": "",
       "identity": "admin",
       "createTime": "2026-02-22T05:42:19.355Z"
+    },
+    {
+      "id": 1771760541401,
+      "username": "kuimei1126",
+      "password": "123456",
+      "email": "",
+      "identity": "merchant",
+      "createTime": "2026-02-22T11:42:21.401Z"
     }
   ],
   "hotels": [
