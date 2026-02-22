@@ -108,7 +108,6 @@ const Register = () => {
         >
           <Select 
             placeholder="请选择身份" 
-            //defaultValue="merchant"
             // 去掉 prefix 属性（v5+ 废弃），如需图标用 renderOption 或 addonBefore
             style={{ width: '100%' }} // 加宽度保证布局美观
           >
