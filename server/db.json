@@ -1,38 +1,4 @@
 {
-  "users": [
-    {
-      "id": 1771667822901,
-      "username": "test1",
-      "password": "123456",
-      "email": "",
-      "identity": "admin",
-      "createTime": "2026-02-21T09:57:02.901Z"
-    },
-    {
-      "id": 1771673643546,
-      "username": "test",
-      "password": "123456",
-      "email": "",
-      "identity": "merchant",
-      "createTime": "2026-02-21T11:34:03.546Z"
-    },
-    {
-      "id": 1771675246810,
-      "username": "shinku",
-      "password": "123456",
-      "email": "",
-      "identity": "admin",
-      "createTime": "2026-02-21T12:00:46.810Z"
-    },
-    {
-      "id": 1771675549668,
-      "username": "awaqwq233",
-      "password": "awaqwq233",
-      "email": "",
-      "identity": "merchant",
-      "createTime": "2026-02-21T12:05:49.668Z"
-    }
-  ],
   "hotels": [
     {
       "id": 1,
