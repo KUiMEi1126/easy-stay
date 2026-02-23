@@ -13,6 +13,17 @@ const userRouter = require('./routes/user');
 app.use('/api/user', userRouter);
 const hotelRouter = require('./routes/hotel');
 app.use('/api/hotel', hotelRouter);
+// 开放静态资源，这样前端可以通过 http://localhost:3000/uploads/xxx.jpg 访问图片
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+// 2. 路由引入
+const adminRoutes = require('./routes/admin');
+const merchantRoutes = require('./routes/merchant');
+const uploadRoutes = require('./routes/upload');
+// 3. 路由挂载
+app.use('/api/admin', adminRoutes); // /api/admin/hotels
+app.use('/api/merchant', merchantRoutes); // /api/merchant/my-hotel
+app.use('/api', uploadRoutes);    // /api/upload
 
 // 仅在 admin-client 已 build 时静态托管并做 SPA 回退
 const distPath = path.join(__dirname, '..', 'admin-client', 'dist');

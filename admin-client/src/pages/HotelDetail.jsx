@@ -2,47 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; 
 import { Card, Descriptions, Button, Tag, Space, Rate, message, Popconfirm, Spin, Divider, Table, Image} from 'antd';
 import { LeftOutlined, CheckCircleOutlined, CloseCircleOutlined, PoweroffOutlined, StarFilled } from '@ant-design/icons';
+import request from '../utils/request';
 
-// 1. 模拟数据
-const mockDatabase = [
-  {
-    id: 1,
-    nameCn: "希尔顿大酒店",
-    nameEn: "Hilton Hotel",
-    address: "北京市朝阳区建国路88号",
-    star: 5,
-    openedAt: "2010-05-01",
-    rating: 4.8,
-    tags: ["免费停车", "健身房", "游泳池"],
-    rooms: [
-      { name: "标准大床房", price: 500, count: 10 },
-      { name: "豪华海景房", price: 880, count: 5 },
-      { name: "行政套房", price: 1200, count: 2 }
-    ],
-    images: [
-    "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3",
-    "https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3"
-    ],
-    status: 'approved', // pending | approved | rejected
-    isOnline: true      // true | false
-  },
-  {
-    id: 2,
-    nameCn: "汉庭快捷酒店",
-    nameEn: "Hanting Hotel",
-    address: "上海市浦东新区世纪大道1号",
-    star: 3,
-    openedAt: "2015-08-15",
-    rating: 4.2,
-    tags: ["免费早餐", "近地铁"],
-    rooms: [
-      { name: "单人房", price: 200, count: 20 },
-      { name: "双床房", price: 280, count: 15 }
-    ],
-    status: 'pending', 
-    isOnline: false    
-  }
-];
+
 
 const HotelDetail = () => {
   const { id } = useParams();
@@ -50,33 +12,39 @@ const HotelDetail = () => {
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
 
-  // 模拟请求
+  // 1. 获取详情
   useEffect(() => {
-    setLoading(true);
-    // 实际项目中：axios.get(`/api/hotel/${id}`)
-    setTimeout(() => {
-      const target = mockDatabase.find(h => h.id === parseInt(id));
-      setDetail(target);
-      setLoading(false);
-    }, 500);
+    const fetchDetail = async () => {
+      setLoading(true);
+      try {
+        const res = await request.get(`/admin/hotels/${id}`);
+        setDetail(res);
+      } catch (e) {
+        // handle error
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
   }, [id]);
 
+  // 2. 通用状态更新函数 (审核/上下线都用这个)
+  const updateStatus = async (payload) => {
+    try {
+      await request.patch(`/admin/hotels/${id}`, payload);
+      message.success('操作成功');
+      // 简单粗暴：重新请求最新数据
+      const res = await request.get(`/admin/hotels/${id}`);
+      setDetail(res);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // 操作逻辑保持不变
-  const handleApprove = () => {
-    message.success('审核已通过！');
-    setDetail({ ...detail, status: 'approved', isOnline: false });
-  };
-
-  const handleReject = () => {
-    message.error('已驳回该申请');
-    setDetail({ ...detail, status: 'rejected' });
-  };
-
-  const handleToggleOnline = () => {
-    const targetStatus = !detail.isOnline;
-    message.success(targetStatus ? '上线成功' : '下线成功');
-    setDetail({ ...detail, isOnline: targetStatus });
-  };
+  const handleApprove = () => updateStatus({ status: 'approved', isOnline: false });
+  const handleReject = () => updateStatus({ status: 'rejected' });
+  const handleToggleOnline = () => updateStatus({ isOnline: !detail.isOnline });
 
   if (loading) return <Spin style={{ margin: '50px auto', display: 'block' }} />;
   if (!detail) return <div>未找到该酒店信息</div>;

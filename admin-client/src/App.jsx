@@ -9,12 +9,17 @@ import HotelList from './pages/HotelList';
 import HotelDetail from './pages/HotelDetail'; 
 import MerchantHotelView from './pages/MerchantHotelView';
 import MerchantHotelEdit from './pages/MerchantHotelEdit';
+import Dashboard from './pages/DashBoard';
 
 // 封装私有路由组件：未登录则跳登录页
 const PrivateRoute = ({ children }) => {
   const isLogin = !!localStorage.getItem('token');
   return isLogin ? children : <Navigate to="/login" />;
 };
+
+// 简单的设置页占位组件
+const Settings = () => <div style={{padding: 24, background:'#fff'}}><h2>系统设置</h2><p>此处可修改密码...</p></div>;
+
 
 function App() {
   return (
@@ -25,8 +30,13 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-          {/* 2. 管理后台 (包含侧边栏的公共布局) */}
           <Route path="/admin" element={<AdminLayout />}>
+            {/* 1. 默认重定向到 Dashboard */}
+            <Route index element={<Navigate to="/admin/dashboard" />} />
+            
+            {/* 2. 新增页面 */}
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="settings" element={<Settings />} />
             {/* 默认跳转到酒店列表 */}
             
             <Route path="hotels" element={<HotelList />} />

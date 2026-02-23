@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Rate, Card, Select, InputNumber, Space, message, Divider , Upload, Modal} from 'antd';
 import { MinusCircleOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import request from '../utils/request';
 import dayjs from 'dayjs'; // 必须引入，用于处理日期回显
 
 const { TextArea } = Input;
@@ -31,37 +32,53 @@ const MerchantHotelEdit = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   // ===========================================
-  // 假设这是一个“修改”场景，我们加载数据
-  // 实际开发中，你应该先判断是 Create 还是 Update
+   // 1. 加载已有数据 (如果是修改模式)
   useEffect(() => {
-    // 模拟数据回填
-    const formData = {
-        ...mockExistingData,
-        // 注意：Antd DatePicker 需要 dayjs 对象，不能直接给字符串
-        openedAt: dayjs(mockExistingData.openedAt, 'YYYY-MM-DD')
-        
+    const loadData = async () => {
+      try {
+        const res = await request.get('/merchant/my-hotel');
+        if (res) {
+          // --- 数据格式转换 ---
+          // 日期: String -> Dayjs
+          if (res.openedAt) res.openedAt = dayjs(res.openedAt);
+          
+          // 图片: String[] -> FileList[]
+          if (res.images && res.images.length > 0) {
+            const formattedFiles = res.images.map((url, i) => ({
+              uid: `-${i}`,
+              name: `img-${i}.png`,
+              status: 'done',
+              url: url,
+            }));
+            setFileList(formattedFiles);
+          }
+          
+          form.setFieldsValue(res);
+        }
+      } catch (e) {
+        console.error(e);
+      }
     };
-    // 2. 新增：处理图片回显 (String[] -> FileList[])
-    if (mockExistingData.images && mockExistingData.images.length > 0) {
-        const formattedFiles = mockExistingData.images.map((url, index) => ({
-            uid: `-${index}`, // 必须是唯一的 uid
-            name: `image-${index}.png`,
-            status: 'done',
-            url: url
-        }));
-        setFileList(formattedFiles);
-    }
-    form.setFieldsValue(formData);
+    loadData();
   }, [form]);
-// ============ 新增：模拟上传请求 ============
-  // 因为没有真实后端，我们用这个函数假装上传成功
-  const customRequest = ({ file, onSuccess }) => {
-    setTimeout(() => {
-      // 这里的 url 通常是后端返回的 oss 地址
-      // 这里我随机返回一张网络图片模拟上传成功
-      const mockUrl = "https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3";
-      onSuccess(mockUrl);
-    }, 1000);
+// 2. 真实的图片上传 (替换之前的 mock)
+  const customRequest = async ({ file, onSuccess, onError }) => {
+    const formData = new FormData();
+    formData.append('file', file); // 'file' 必须对应后端 multer 的字段名
+
+    try {
+      // 注意：这里使用 axios.post 而不是 request实例，
+      // 因为 content-type 是 multipart/form-data，
+      // 虽然 request 实例也能用，但为了避免拦截器干扰，直接用 axios 或者覆盖 header 也可以
+      // 这里为了简单，直接复用 request 实例，axios 会自动识别 FormData
+      const res = await request.post('/upload', formData);
+      
+      // 后端直接返回的是 URL 字符串，例如 "http://localhost:3000/..."
+      onSuccess(res); 
+    } catch (err) {
+      onError(err);
+      message.error('图片上传失败');
+    }
   };
 
   // 处理 Upload 组件的变化
@@ -84,22 +101,25 @@ const MerchantHotelEdit = () => {
   // ==========================================
 
 
-  const onFinish = (values) => {
-    // 1. 数据格式化
+  // 3. 提交表单
+  const onFinish = async (values) => {
+    // 提取图片 URL
+    // fileList 里可能有旧图片 (有 url 属性) 和新上传的图片 (response 属性)
+    const images = fileList.map(f => f.url || f.response).filter(Boolean);
+
     const submitData = {
-        ...values,
-        // 把 dayjs 对象转回字符串传给后端
-        openedAt: values.openedAt ? values.openedAt.format('YYYY-MM-DD') : null
+      ...values,
+      openedAt: values.openedAt ? values.openedAt.format('YYYY-MM-DD') : null,
+      images: images,
     };
 
-    console.log('提交给后端的数据:', submitData);
-
-    // 2. 模拟API提交
-    message.loading({ content: '正在提交...', key: 'updatable' });
-    setTimeout(() => {
-      message.success({ content: '提交成功！请等待管理员审核', key: 'updatable', duration: 2 });
-      navigate('/admin/my-hotel'); // 提交成功后跳回查看页
-    }, 1000);
+    try {
+      await request.post('/merchant/hotel-edit', submitData);
+      message.success('提交成功');
+      navigate('/admin/my-hotel');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

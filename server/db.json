@@ -3110,6 +3110,31 @@
           "count": 8
         }
       ]
+    },
+    {
+      "id": 1771841856198,
+      "ownerId": 2,
+      "nameCn": "棍母大酒店",
+      "nameEn": "Nothing Hotel",
+      "address": "吉吉国合成天下区道理大街b3号",
+      "star": 5,
+      "openedAt": "2020-02-22",
+      "tags": [
+        "电棍"
+      ],
+      "rooms": [
+        {
+          "name": "职业房",
+          "price": 325,
+          "count": 18
+        }
+      ],
+      "images": [
+        "http://localhost:3000/uploads/1771841852667-887196108.png"
+      ],
+      "status": "pending",
+      "isOnline": false,
+      "rating": 5
     }
   ]
 }
