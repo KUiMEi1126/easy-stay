@@ -46,11 +46,13 @@ const Login = () => {
       }
       localStorage.setItem('rememberedUserInfo', JSON.stringify(rememberedUserInfo));
 
-      if (matchedUser.identity === 'admin') {
-        navigate('/admin/hotels');
-      } else {
-        navigate('/admin/hotel-edit');
-      }
+      navigate('/admin/dashboard');
+
+      // if (matchedUser.identity === 'admin') {
+      //   navigate('/admin/hotels');
+      // } else {
+      //   navigate('/admin/my-hotel');
+      // }
     } catch (err) {
       message.error('登录失败：' + err.message);
     }

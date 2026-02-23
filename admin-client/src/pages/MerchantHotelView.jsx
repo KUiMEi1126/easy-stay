@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Descriptions, Button, Tag, Space, Rate, Empty, Spin, Alert, Table } from 'antd';
+import { Card, Descriptions, Button, Tag, Space, Rate, Empty, Spin, Alert, Table, Divider, Image} from 'antd';
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import request from '../utils/request';
@@ -77,14 +77,27 @@ const MerchantHotelView = () => {
       {/* 顶部状态提示栏 */}
       <div style={{ marginBottom: 16 }}>
         {hotel.status === 'pending' && <Alert message="审核中" description="您的酒店信息正在审核中，审核通过后方可上线。" type="warning" showIcon />}
-        {hotel.status === 'rejected' && <Alert message="审核未通过" description="请修改信息后重新提交。" type="error" showIcon />}
+        {hotel.status === 'rejected' && (
+           <Alert 
+             message="审核未通过" 
+             description={
+               <div>
+                 <div style={{ fontWeight: 'bold' }}>驳回原因：{hotel.rejectReason || '无详细理由'}</div>
+                 <div style={{ marginTop: 8 }}>请点击右侧“修改信息”按钮，完善信息后重新提交。</div>
+               </div>
+             } 
+             type="error" 
+             showIcon 
+           />
+        )}
         {hotel.status === 'approved' && hotel.isOnline && <Alert message="营业中" description="您的酒店正在正常营业。" type="success" showIcon />}
-        {hotel.status === 'approved' && !hotel.isOnline && <Alert message="已下线" description="酒店已下线，请在管理端手动上线。" type="info" showIcon />}
+        {hotel.status === 'approved' && !hotel.isOnline && <Alert message="已下线" description="酒店已下线，如需上线请联系管理员。" type="info" showIcon />}
       </div>
 
       <Card 
         title="我的酒店信息" 
-        extra={<Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>修改信息</Button>}
+        // 商户点击修改信息后，进入 Edit 页，重新提交会自动把 status 改回 pending
+        extra={<Button type="primary" onClick={() => navigate('/admin/hotel-edit')}>修改信息</Button>}
       >
         <Descriptions bordered column={2}>
           <Descriptions.Item label="中文名称">{hotel.nameCn}</Descriptions.Item>
@@ -96,7 +109,28 @@ const MerchantHotelView = () => {
             {hotel.tags && hotel.tags.map(t => <Tag key={t} color="blue">{t}</Tag>)}
           </Descriptions.Item>
         </Descriptions>
+         {/* ============ 新增：图片展示区域 (开始) ============ */}
+        <Divider orientation="left">酒店图册</Divider>
         
+        {hotel.images && hotel.images.length > 0 ? (
+          <Image.PreviewGroup>
+            <Space size="middle" wrap>
+              {hotel.images.map((url, index) => (
+                <Image
+                  key={index}
+                  width={120}
+                  height={90}
+                  src={url}
+                  style={{ objectFit: 'cover', borderRadius: 4, border: '1px solid #f0f0f0' }}
+                  placeholder={<Spin />} // 加载占位
+                />
+              ))}
+            </Space>
+          </Image.PreviewGroup>
+        ) : (
+          <div style={{ color: '#999', paddingLeft: 12 }}>暂无上传图片，请点击右上角“修改信息”进行上传。</div>
+        )}
+        {/* ============ 新增：图片展示区域 (结束) ============ */}
         <h3 style={{ marginTop: 20 }}>房型列表</h3>
         <Table 
             dataSource={hotel.rooms} 

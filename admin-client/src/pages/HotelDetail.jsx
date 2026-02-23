@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; 
-import { Card, Descriptions, Button, Tag, Space, Rate, message, Popconfirm, Spin, Divider, Table, Image} from 'antd';
+import { Card, Descriptions, Button, Tag, Space, Rate, message, Popconfirm, Spin, Divider, Table, Image, Modal, Input} from 'antd';
 import { LeftOutlined, CheckCircleOutlined, CloseCircleOutlined, PoweroffOutlined, StarFilled } from '@ant-design/icons';
 import request from '../utils/request';
 
-
+const { TextArea } = Input;//文本域
 
 const HotelDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
+  //驳回弹窗
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
   // 1. 获取详情
   useEffect(() => {
@@ -33,7 +36,7 @@ const HotelDetail = () => {
     try {
       await request.patch(`/admin/hotels/${id}`, payload);
       message.success('操作成功');
-      // 简单粗暴：重新请求最新数据
+      // 刷新最新数据
       const res = await request.get(`/admin/hotels/${id}`);
       setDetail(res);
     } catch (error) {
@@ -41,10 +44,30 @@ const HotelDetail = () => {
     }
   };
 
-  // 操作逻辑保持不变
+  // 操作逻辑
   const handleApprove = () => updateStatus({ status: 'approved', isOnline: false });
   const handleReject = () => updateStatus({ status: 'rejected' });
   const handleToggleOnline = () => updateStatus({ isOnline: !detail.isOnline });
+  // 处理驳回逻辑
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) {
+      return message.warning('请输入驳回理由');
+    }
+
+    try {
+      // 发送请求：状态改为 rejected，并附带理由
+      await request.patch(`/admin/hotels/${id}`, { 
+        status: 'rejected',
+        rejectReason: rejectReason 
+      });
+      
+      message.success('已驳回申请');
+      setIsRejectModalOpen(false); // 关闭弹窗
+      navigate('/admin/hotels');   // 因为设定上驳回后列表就不显示了，直接跳回列表页即可
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   if (loading) return <Spin style={{ margin: '50px auto', display: 'block' }} />;
   if (!detail) return <div>未找到该酒店信息</div>;
@@ -155,7 +178,10 @@ const HotelDetail = () => {
           
           {detail.status === 'pending' && (
             <>
-              <Button danger onClick={handleReject} icon={<CloseCircleOutlined />}>驳回申请</Button>
+              <Button danger onClick={() => setIsRejectModalOpen(true)} icon={<CloseCircleOutlined />}>
+                驳回申请
+              </Button>
+
               <Popconfirm title="确认通过审核？" onConfirm={handleApprove}>
                 <Button type="primary" icon={<CheckCircleOutlined />}>通过审核</Button>
               </Popconfirm>
@@ -178,6 +204,24 @@ const HotelDetail = () => {
         </div>
 
       </Card>
+
+       <Modal
+        title="驳回申请"
+        open={isRejectModalOpen}
+        onOk={handleRejectSubmit}
+        onCancel={() => setIsRejectModalOpen(false)}
+        okText="确认驳回"
+        cancelText="取消"
+        okButtonProps={{ danger: true }} // 让确认按钮变红，警示作用
+      >
+        <p>请填写驳回理由，以便商户修改：</p>
+        <TextArea 
+          rows={4} 
+          placeholder="例如：图片不清晰，数据填写存在反常..." 
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+        />
+      </Modal>
     </div>
   );
 };

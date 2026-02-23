@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Tag, Space, Button, Modal, message, Rate, Popconfirm } from 'antd';
 import { useNavigate } from 'react-router-dom'; // 1. 引入路由钩子
 import request from '../utils/request';
@@ -6,10 +6,10 @@ import request from '../utils/request';
 // 1. 修改 Mock 数据
 // 增加 isOnline 字段： true 代表上线(营业中), false 代表下线(未上线)
 // Mock数据保持不变...
-const mockData = [
-  { id: 1, nameCn: '希尔顿大酒店', nameEn: 'Hilton', status: 'approved', isOnline: true, star: 5, minPrice: 800 },
-  { id: 2, nameCn: '汉庭快捷酒店', nameEn: 'Hanting', status: 'pending', isOnline: false, star: 3, minPrice: 200 },
-];
+// const mockData = [
+//   { id: 1, nameCn: '希尔顿大酒店', nameEn: 'Hilton', status: 'approved', isOnline: true, star: 5, minPrice: 800 },
+//   { id: 2, nameCn: '汉庭快捷酒店', nameEn: 'Hanting', status: 'pending', isOnline: false, star: 3, minPrice: 200 },
+// ];
 
 
 const HotelList = () => {
@@ -26,7 +26,9 @@ const fetchHotels = async () => {
     setLoading(true);
     try {
       const res = await request.get('/admin/hotels');
-      setData(res); // 后端直接返回数组
+      //过滤掉已驳回的酒店，管理员列表就只显示 "待审核" 和 "已通过" 的
+      const validHotels = res.filter(item => item.status !== 'rejected');
+      setData(validHotels); // 后端直接返回数组
     } finally {
       setLoading(false);
     }
