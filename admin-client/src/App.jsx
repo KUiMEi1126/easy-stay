@@ -6,14 +6,20 @@ import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import AdminLayout from './components/AdminLayout';
 import HotelList from './pages/HotelList';
-import HotelEdit from './pages/HotelEdit';
-
+import HotelDetail from './pages/HotelDetail'; 
+import MerchantHotelView from './pages/MerchantHotelView';
+import MerchantHotelEdit from './pages/MerchantHotelEdit';
+import Dashboard from './pages/DashBoard';
 
 // 封装私有路由组件：未登录则跳登录页
 const PrivateRoute = ({ children }) => {
   const isLogin = !!localStorage.getItem('token');
   return isLogin ? children : <Navigate to="/login" />;
 };
+
+// 简单的设置页占位组件
+const Settings = () => <div style={{padding: 24, background:'#fff'}}><h2>系统设置</h2><p>此处可修改密码...</p></div>;
+
 
 function App() {
   return (
@@ -24,16 +30,24 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-          {/* 2. 管理后台 (包含侧边栏的公共布局) */}
           <Route path="/admin" element={<AdminLayout />}>
+            {/* 1. 默认重定向到 Dashboard */}
+            <Route index element={<Navigate to="/admin/dashboard" />} />
+            
+            {/* 2. 新增页面 */}
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="settings" element={<Settings />} />
             {/* 默认跳转到酒店列表 */}
-            <Route index element={<Navigate to="/admin/hotels" />} />
             
-            {/* 酒店列表 (审核/下线) */}
             <Route path="hotels" element={<HotelList />} />
+            <Route path="hotel/:id" element={<HotelDetail />} />
+            {/* --- 新增：商户端路由 --- */}
+    
+            {/* 1. 查看我的酒店 */}
+            <Route path="my-hotel" element={<MerchantHotelView />} />
             
-            {/* 酒店录入 (发布/修改) */}
-            <Route path="hotel-edit" element={<HotelEdit />} />
+            {/* 2. 编辑/录入酒店 (这里复用一个路由即可，新建和编辑都在这) */}
+            <Route path="hotel-edit" element={<MerchantHotelEdit />} />
           </Route>
 
           {/* 3. 默认重定向到登录 */}
