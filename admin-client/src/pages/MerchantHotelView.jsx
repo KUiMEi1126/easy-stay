@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Descriptions, Button, Tag, Space, Rate, Empty, Spin, Alert, Table } from 'antd';
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import request from '../utils/request';
 
 // 模拟当前登录商户的酒店数据
 // 场景1：新用户，数据为 null
@@ -29,12 +30,17 @@ const MerchantHotelView = () => {
   const [loading, setLoading] = useState(true);
   const [hotel, setHotel] = useState(null);
 
-  useEffect(() => {
-    // 模拟API请求： GET /api/merchant/my-hotel
-    setTimeout(() => {
-      setHotel(mockMyHotel); // 切换这里测试有无数据的效果
-      setLoading(false);
-    }, 500);
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 请求后端，header 里会自动带上 x-user-id
+        const res = await request.get('/merchant/my-hotel');
+        setHotel(res); // 如果后端返回 null，这里就是 null
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   // 跳转去编辑/创建页

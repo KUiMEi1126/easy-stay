@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Tag, Space, Button, Modal, message, Rate, Popconfirm } from 'antd';
 import { useNavigate } from 'react-router-dom'; // 1. 引入路由钩子
+import request from '../utils/request';
 
 // 1. 修改 Mock 数据
 // 增加 isOnline 字段： true 代表上线(营业中), false 代表下线(未上线)
@@ -12,7 +13,8 @@ const mockData = [
 
 
 const HotelList = () => {
-  const [data] = useState(mockData);
+  const [data, setData] = useState([]); // 初始为空数组
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // 2. 获取 navigate 实例
 
   // 跳转到详情页
@@ -20,16 +22,33 @@ const HotelList = () => {
     navigate(`/admin/hotel/${id}`);
   };
   
-// // 模拟获取数据的逻辑
-// useEffect(() => {
-//   // 假设 fetchAllHotels() 获取了数据库所有数据
-//   const allData = mockDatabase; 
-  
-//   // 核心过滤：过滤掉 status 为 'draft' 的数据
-//   const adminVisibleData = allData.filter(item => item.status !== 'draft');
-  
-//   setData(adminVisibleData);
-// }, []);
+const fetchHotels = async () => {
+    setLoading(true);
+    try {
+      const res = await request.get('/admin/hotels');
+      setData(res); // 后端直接返回数组
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHotels();
+  }, []);
+
+const handleToggleOnline = async (record) => {
+    try {
+      // 对应后端 PATCH /api/admin/hotels/:id
+      await request.patch(`/admin/hotels/${record.id}`, {
+        isOnline: !record.isOnline // 取反状态
+      });
+      message.success('状态更新成功');
+      fetchHotels(); // 重新加载列表
+    } catch (error) {
+      // 错误处理由拦截器接管
+    }
+  };
+
 
   // 表格列定义
   const columns = [
@@ -84,7 +103,7 @@ const HotelList = () => {
       <div style={{ marginBottom: 16 }}>
          <h2>酒店信息审核/管理</h2>
       </div>
-      <Table columns={columns} dataSource={data} rowKey="id" />
+      <Table columns={columns} dataSource={data} rowKey="id" loading={loading} />
     </div>
   );
 };
