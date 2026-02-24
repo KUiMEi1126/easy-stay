@@ -23,6 +23,16 @@ const Dashboard = () => {
     merchantOrders: 560   // 商户数据暂时模拟
   });
 
+  // 根据系统时间获取问候语
+  const getTimeGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return '早安';
+    if (hour >= 12 && hour < 14) return '午安';
+    if (hour >= 14 && hour < 18) return '下午好';
+    if (hour >= 18 && hour < 23) return '晚上好';
+    return '夜深了'; // 0点到5点
+  };
+
   // 获取数据
   useEffect(() => {
     const fetchData = async () => {
@@ -53,15 +63,15 @@ const Dashboard = () => {
 
   // 定义不同角色的公告数据
   const adminNotices = [
-    { title: '关于本周日即将进行的系统维护通知', type: 'urgent', date: '2023-11-10' },
-    { title: '关于加强酒店资质审核的最新规定', type: 'normal', date: '2023-11-08' },
-    { title: '待处理的投诉工单 (3)', type: 'warning', date: '2023-11-05' },
+    { title: '关于本周日即将进行的系统维护通知', type: 'urgent', date: '2025-11-10' },
+    { title: '关于加强酒店资质审核的最新规定', type: 'normal', date: '2025-11-08' },
+    { title: '待处理的投诉工单 (3)', type: 'warning', date: '2025-11-05' },
   ];
 
   const merchantNotices = [
-    { title: '双十一大促活动报名即将截止', type: 'urgent', date: '2023-11-09' },
-    { title: '如何提升酒店在首页的曝光率？', type: 'normal', date: '2023-11-07' },
-    { title: '请及时更新房态信息以免造成超售', type: 'warning', date: '2023-11-01' },
+    { title: '双十一大促活动报名即将截止', type: 'urgent', date: '2025-11-09' },
+    { title: '如何提升酒店在首页的曝光率？', type: 'normal', date: '2025-11-07' },
+    { title: '请及时更新房态信息以免造成超售', type: 'warning', date: '2025-11-01' },
   ];
 
    // 渲染公告列表的辅助函数
@@ -107,7 +117,7 @@ const Dashboard = () => {
       >
 
        <h2 style={{ margin: 0 ,fontSize: 80, color: '#fff', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}>
-            早安，{localStorage.getItem('lastLoginUsername') || '管理员'}！ 
+            {getTimeGreeting()}，{localStorage.getItem('lastLoginUsername') || '管理员'}！ 
             <span style={{ fontSize: 14, color: '#666', marginLeft: 10 }}>
                 ({isAdmin ? '管理员' : '酒店商户'})
             </span>
