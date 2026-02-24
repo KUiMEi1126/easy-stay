@@ -207,7 +207,7 @@
       "images": [
         "http://localhost:3000/uploads/1771841852667-887196108.png"
       ],
-      "status": "pending",
+      "status": "approved",
       "isOnline": false,
       "rating": 5
     }
