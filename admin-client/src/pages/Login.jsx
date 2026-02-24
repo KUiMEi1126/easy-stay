@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Card, Button, Form, Input, Checkbox, message, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import './login.css';
 
 const Login = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   // 记住我勾选状态（解决表单联动问题）
   const [rememberChecked, setRememberChecked] = useState(true);
+  // 顶部改为始终显示默认图标（不再尝试加载外部 login-image.jpg）
 
   // 登录核心逻辑：校验账号+密码+身份，按身份跳转
   const onFinish = async (values) => {
@@ -116,14 +118,19 @@ const Login = () => {
   };
 
   return (
-    <div style={{ 
-      height: '100vh', 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center',
-      background: '#f0f2f5'
-    }}>
-      <Card title="酒店管理系统登录" style={{ width: 400 }} bordered={false}>
+    <div className="login-page">
+      <div className="login-card-wrapper">
+        <div className="login-top-image">
+          <img
+            src="/login-title.png"
+            alt="title"
+            className="login-top-img"
+            onLoad={(e) => { const fb = e.currentTarget.nextSibling; if (fb) fb.style.display = 'none'; }}
+            onError={(e) => { e.currentTarget.style.display = 'none'; const fb = e.currentTarget.nextSibling; if (fb) fb.style.display = 'flex'; }}
+          />
+          <div className="login-fallback" style={{ display: 'none' }}>🏨</div>
+        </div>
+        <Card title="登录" className="login-card" bordered={false}>
         <Form
           form={form}
           name="login"
@@ -187,7 +194,8 @@ const Login = () => {
             </Space>
           </Form.Item>
         </Form>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

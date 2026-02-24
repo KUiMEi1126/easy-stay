@@ -17,12 +17,12 @@
       "createTime": "2026-02-22T05:42:19.355Z"
     },
     {
-      "id": 1771760541401,
-      "username": "kuimei1126",
-      "password": "123456",
+      "id": 1771759927971,
+      "username": "ssss",
+      "password": "ssssss",
       "email": "",
       "identity": "merchant",
-      "createTime": "2026-02-22T11:42:21.401Z"
+      "createTime": "2026-02-22T11:32:07.971Z"
     },
     {
       "id": 1771849796175,
@@ -205,7 +205,9 @@
         }
       ],
       "images": [
-        "http://localhost:3000/uploads/1771841852667-887196108.png"
+        "http://localhost:3000/uploads/1771841852667-887196108.png",
+        "http://localhost:3000/uploads/1771850806273-382641377.jpg",
+        "http://localhost:3000/uploads/1771913556976-864934970.png"
       ],
       "status": "approved",
       "isOnline": false,
