@@ -56,7 +56,7 @@ const HotelList = () => {
                 return data.filter(item => item.status === 'approved' && item.isOnline);
             case 'offline':
                 // 筛选：未上线 (审核通过 且 不在线)
-                return data.filter(item => item.status === 'approved' && !record.isOnline);
+                return data.filter(item => item.status === 'approved' && !item.isOnline);
             case 'all':
             default:
                 // 显示全部
