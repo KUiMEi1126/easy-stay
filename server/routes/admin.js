@@ -27,8 +27,17 @@ router.patch('/hotels/:id', async (req, res) => {
   const index = db.hotels.findIndex(h => h.id === parseInt(req.params.id));
   
   if (index !== -1) {
-    // 这里的 req.body 包含 { status: '...', isOnline: ... }
-    const updatedHotel = { ...db.hotels[index], ...req.body };
+    // 获取前端传来的 status, isOnline, rejectReason
+    const { status, isOnline, rejectReason } = req.body;
+
+    const updatedHotel = { 
+        ...db.hotels[index], 
+        status: status !== undefined ? status : db.hotels[index].status,
+        isOnline: isOnline !== undefined ? isOnline : db.hotels[index].isOnline,
+        // 如果有驳回理由则更新，没有则保持原样或清空(取决于业务逻辑，这里简单处理为更新)
+        rejectReason: rejectReason || db.hotels[index].rejectReason 
+    };
+
     db.hotels[index] = updatedHotel;
     await writeDb(db);
     res.json({ success: true, data: updatedHotel });

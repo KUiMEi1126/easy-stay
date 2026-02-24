@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, DatePicker, Rate, Card, Select, InputNumber, Space, message, Divider , Upload, Modal} from 'antd';
-import { MinusCircleOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { Form, Input, Button, DatePicker, Rate, Card, Select, InputNumber, Space, message, Divider , Upload, Modal, Popconfirm} from 'antd';
+import { MinusCircleOutlined, PlusOutlined, SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import request from '../utils/request';
 import dayjs from 'dayjs'; // 必须引入，用于处理日期回显
@@ -8,21 +8,24 @@ import dayjs from 'dayjs'; // 必须引入，用于处理日期回显
 const { TextArea } = Input;
 
 // 模拟已有数据（如果是新建则为空）
-const mockExistingData = {
-    nameCn: "希尔顿大酒店",
-    nameEn: "Hilton Hotel",
-    address: "北京市朝阳区",
-    star: 5,
-    openedAt: "2010-05-01", // 字符串格式
-    tags: ["免费停车", "健身房"],
-    rooms: [
-      { name: "标准大床房", price: 500, count: 10 }
-    ],
-    images: 
-    [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3"
-    ]
-};
+// const mockExistingData = {
+//     nameCn: "希尔顿大酒店",
+//     nameEn: "Hilton Hotel",
+//     address: "北京市朝阳区",
+//     star: 5,
+//     openedAt: "2010-05-01", // 字符串格式
+//     tags: ["免费停车", "健身房"],
+//     rooms: [
+//       { name: "标准大床房", price: 500, count: 10 }
+//     ],
+//     images: 
+//     [
+//       "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3"
+//     ]
+// };
+
+// 处理取消操作
+
 
 const MerchantHotelEdit = () => {
   const [form] = Form.useForm();
@@ -99,7 +102,10 @@ const MerchantHotelEdit = () => {
     setPreviewOpen(true);
   };
   // ==========================================
-
+  const handleCancel = () => {
+    // 跳转回“我的酒店”查看页
+    navigate('/admin/my-hotel');
+  };
 
   // 3. 提交表单
   const onFinish = async (values) => {
@@ -228,10 +234,27 @@ const MerchantHotelEdit = () => {
             )}
           </Form.List>
 
-          <Form.Item style={{ marginTop: 24, textAlign: 'center' }}>
-            <Button type="primary" htmlType="submit" size="large" icon={<SaveOutlined />}>
-              提交保存
-            </Button>
+          <Form.Item style={{ marginTop: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+              
+              {/* 提交按钮 */}
+              <Button type="primary" htmlType="submit" size="large" icon={<SaveOutlined />}>
+                提交保存
+              </Button>
+
+              {/* 新增：取消按钮 (带二次确认) */}
+              <Popconfirm
+                title="确定要取消编辑吗？"
+                description="未保存的内容将会丢失，是否确认返回？"
+                onConfirm={handleCancel}
+                okText="确认离开"
+                cancelText="继续编辑"
+              >
+                <Button size="large" icon={<RollbackOutlined />}>
+                  取消返回
+                </Button>
+              </Popconfirm>
+            </div>
           </Form.Item>
               
           {/* 图片预览弹窗 */}
