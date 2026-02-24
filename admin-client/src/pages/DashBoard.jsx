@@ -8,6 +8,7 @@ import {
   NotificationOutlined,
   SoundOutlined
 } from '@ant-design/icons';
+import bgImage from '../assets/dashboard-bg.jpg'; 
 import request from '../utils/request';
 
 const Dashboard = () => {
@@ -32,7 +33,7 @@ const Dashboard = () => {
           // 调用之前的获取列表接口
           const res = await request.get('/admin/hotels');
           // 前端计算
-          const total = res.length;
+          const total = res.filter(h => h.status !== 'rejected').length;
           const pending = res.filter(h => h.status === 'pending').length;
           
           setStats(prev => ({ ...prev, totalHotels: total, pendingHotels: pending }));
@@ -89,25 +90,36 @@ const Dashboard = () => {
   );
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2 style={{ marginBottom: 24, fontSize: 38, fontWeight: 'bold' }}>
-        早安，{localStorage.getItem('lastLoginUsername') || '管理员/商户'}
-        <span style={{ fontSize: 14, color: '#999', marginLeft: 10 }}>
-            ({isAdmin ? '管理员' : '酒店商户'})
-        </span>
+    <div 
+        style={{ 
+            // 1. 设置背景图
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed', // 让背景固定，滚动时有视差效果
+            minHeight: '100%', 
+            padding: 24,
+            opacity: 0.95, // 整体稍微透明一点，增加层次感
+            // 2. 加一个深色或浅色遮罩，防止背景太花看不清文字
+            // 这里用了一个线性渐变，从上到下稍微变暗，增加层次感
+            boxShadow: 'inset 0 0 100px rgba(0,0,0,0.2)'
+        }}
+      >
+
+       <h2 style={{ margin: 0 ,fontSize: 80, color: '#fff', textShadow: '0 0 5px rgba(0,0,0,0.8)' }}>
+            早安，{localStorage.getItem('lastLoginUsername') || '管理员'}！ 
+            <span style={{ fontSize: 14, color: '#666', marginLeft: 10 }}>
+                ({isAdmin ? '管理员' : '酒店商户'})
+            </span>
       </h2>
       
       {loading ? <Spin size="large" /> : (
         <>
-          {/* === 顶部统计卡片 === */}
+           {/* === 顶部统计卡片 === */}
           <Row gutter={16}>
             <Col span={8}>
-              <Card hoverable>
-                <Statistic
-                  title="当前日期"
-                  value={new Date().toLocaleDateString()}
-                  prefix={<UserOutlined />}
-                />
+              <Card hoverable style={{ borderRadius: 8, opacity: 0.95 }}>
+                <Statistic title="当前日期" value={new Date().toLocaleDateString()} prefix={<UserOutlined />} />
               </Card>
             </Col>
 
@@ -115,7 +127,7 @@ const Dashboard = () => {
             {isAdmin ? (
               <>
                 <Col span={8}>
-                  <Card hoverable>
+                  <Card hoverable style={{ borderRadius: 8, opacity: 0.95 }}>
                     <Statistic
                       title="待审核酒店"
                       value={stats.pendingHotels} // 真实数据
@@ -125,7 +137,7 @@ const Dashboard = () => {
                   </Card>
                 </Col>
                 <Col span={8}>
-                  <Card hoverable>
+                  <Card hoverable style={{ borderRadius: 8, opacity: 0.95 }}>
                     <Statistic
                       title="平台总酒店数"
                       value={stats.totalHotels} // 真实数据
@@ -137,7 +149,7 @@ const Dashboard = () => {
             ) : (
               <>
                 <Col span={8}>
-                  <Card hoverable>
+                  <Card hoverable style={{ borderRadius: 8, opacity: 0.95 }}>
                     <Statistic
                       title="今日访客 (模拟)"
                       value={stats.merchantVisitors}
@@ -146,7 +158,7 @@ const Dashboard = () => {
                   </Card>
                 </Col>
                 <Col span={8}>
-                  <Card hoverable>
+                  <Card hoverable style={{ borderRadius: 8, opacity: 0.95 }}>
                     <Statistic
                       title="总订单量 (模拟)"
                       value={stats.merchantOrders}
@@ -161,13 +173,13 @@ const Dashboard = () => {
           {/* === 底部公告栏 (区分角色) === */}
           <Row gutter={16} style={{ marginTop: 24 }}>
             <Col span={16}>
-               <Card title={isAdmin ? "管理中心公告" : "商户消息中心"} extra={<a href="#">查看更多</a>}>
+               <Card hoverable style={{ borderRadius: 8, opacity: 0.95 }} title={isAdmin ? "管理中心公告" : "商户消息中心"} extra={<a href="#">查看更多</a>}>
                   {isAdmin ? renderNoticeList(adminNotices) : renderNoticeList(merchantNotices)}
                </Card>
             </Col>
             
             <Col span={8}>
-                <Card title="快速入口">
+                <Card title="快速入口" hoverable style={{ borderRadius: 8, opacity: 0.95 }}>
                     {isAdmin ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                             <a href="/admin/hotels">审核新入驻酒店 &gt;</a>
