@@ -13,10 +13,20 @@ const getDbData = () => {
 router.get('/', (req, res) => {
     try {
         const db = getDbData();
+        console.log('🔍 数据库加载成功，hotels数组长度:', db.hotels ? db.hotels.length : 'undefined');
         let list = [...db.hotels];
 
         // 筛选参数
         const { sort, star, keyword, minPrice, maxPrice, tag, province, city, checkin, checkout } = req.query;
+
+        console.log('========== 后端接收到的搜索参数 ==========');
+        console.log('province:', province, 'city:', city, 'keyword:', keyword);
+        console.log('star:', star, 'tag:', tag);
+        console.log('minPrice:', minPrice, 'maxPrice:', maxPrice);
+        console.log('初始酒店数量:', list.length);
+        if (list.length > 0) {
+            console.log('第一个酒店示例:', { id: list[0].id, nameCn: list[0].nameCn, address: list[0].address });
+        }
 
         // 省份到主要城市映射（用于省份选择能匹配到省内城市）
         const provinceCities = {
@@ -57,78 +67,122 @@ router.get('/', (req, res) => {
 
         // 星级筛选
         if (star) {
+            const beforeLength = list.length;
             list = list.filter(h => h.star === parseInt(star));
+            console.log(`⭐ 星级筛选 (star=${star}): ${beforeLength} -> ${list.length}`);
         }
 
-        // 城市筛选（地址中包含城市）
-        if (city && city.trim()) {
-            const c = city.trim().toLowerCase();
-            list = list.filter(h => (h.address || '').toLowerCase().includes(c));
-        }
+        // 关键词、地址、省份匹配逻辑改为并集，并标记匹配类型
+        let hasSearchConditions = false;
+        const provinceLower = province && province.trim() ? province.trim().toLowerCase() : null;
+        const provinceCitiesList = provinceLower ? (provinceCities[province.trim()] || []).map(c => c.toLowerCase()) : [];
+        const cityLower = city && city.trim() ? city.trim().toLowerCase() : null;
+        const kwList = keyword && keyword.trim() 
+            ? keyword.trim().toLowerCase().split(/[-—、\s]+/).map(s => s.trim()).filter(Boolean)
+            : [];
 
-        // 关键词筛选（支持nameCn、nameEn、address、tags），支持多城市组合关键词
-        if (keyword && keyword.trim()) {
-            const kwList = keyword
-                .trim()
-                .toLowerCase()
-                .split(/[-—、\s]+/)
-                .map(s => s.trim())
-                .filter(Boolean);
-
-            list = list.filter(h => {
+        if (provinceLower || cityLower || kwList.length > 0) {
+            hasSearchConditions = true;
+            
+            // 为每个酒店标记匹配类型
+            list = list.map(h => {
+                const address = (h.address || '').toLowerCase();
                 const nameCn = (h.nameCn || '').toLowerCase();
                 const nameEn = (h.nameEn || '').toLowerCase();
-                const address = (h.address || '').toLowerCase();
                 const tags = Array.isArray(h.tags) ? h.tags.map(t => t.toLowerCase()) : [];
 
-                if (kwList.length === 0) return true;
+                // 检查省份匹配
+                let provinceMatch = false;
+                if (provinceLower) {
+                    if (address.includes(provinceLower)) {
+                        provinceMatch = true;
+                    } else {
+                        for (const c of provinceCitiesList) {
+                            if (address.includes(c)) {
+                                provinceMatch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
 
-                return kwList.some(kw =>
+                // 检查地址匹配（city参数）
+                const addressMatch = cityLower ? address.includes(cityLower) : false;
+
+                // 检查关键词匹配（名称或标签）
+                const keywordMatch = kwList.length > 0 ? kwList.some(kw =>
                     nameCn.includes(kw) ||
                     nameEn.includes(kw) ||
-                    address.includes(kw) ||
                     tags.some(t => t.includes(kw))
-                );
+                ) : false;
+
+                // 计算匹配得分（用于优先级排序）
+                // province匹配+1，city匹配+1，keyword匹配+1
+                let matchScore = 0;
+                if (provinceLower && provinceMatch) matchScore += 1;
+                if (cityLower && addressMatch) matchScore += 1;
+                if (kwList.length > 0 && keywordMatch) matchScore += 1;
+
+                // 如果有province或city条件，则只计算地址相关的匹配
+                // 如果仅有keyword，则keyword匹配就算高优先级
+                let matchPriority = 0;
+                if (provinceLower || cityLower) {
+                    // 有地址条件时，优先级按：地址+关键词 > 仅关键词 > 仅地址 > 都不匹配
+                    if ((provinceMatch || addressMatch) && keywordMatch) matchPriority = 3; // 地址+关键词都匹配
+                    else if (keywordMatch) matchPriority = 2; // 仅关键词匹配
+                    else if (provinceMatch || addressMatch) matchPriority = 1; // 仅地址匹配
+                    else matchPriority = 0; // 都不匹配
+                } else if (kwList.length > 0) {
+                    // 仅有关键词时
+                    if (keywordMatch) matchPriority = 3;
+                    else matchPriority = 0;
+                }
+    
+                return { ...h, _matchPriority: matchPriority, _matchScore: matchScore };
+            });
+
+            // 按优先级排序（优先级高的在前）
+            list.sort((a, b) => b._matchPriority - a._matchPriority);
+            
+            // 调试：输出排序后前10个酒店的信息
+            console.log('优先级排序后，前10个酒店的信息:');
+            list.slice(0, 10).forEach((h, i) => {
+                console.log(`  ${i+1}. ${h.nameCn} - 地址: ${h.address} - 优先级: ${h._matchPriority}`);
             });
         }
 
         // 标签筛选（只返回包含该tag的酒店）
         if (tag && tag.trim()) {
-            list = list.filter(h => Array.isArray(h.tags) && h.tags.includes(tag));
+            const beforeLength = list.length;
+            const tagLower = tag.trim().toLowerCase();
+            list = list.filter(h => Array.isArray(h.tags) && h.tags.some(t => t.toLowerCase() === tagLower));
+            console.log(`🏷️ 标签筛选 (tag=${tag}): ${beforeLength} -> ${list.length}`);
         }
 
         // 日期筛选（基础可用性判断）：若同时传入 checkin 和 checkout，则只保留存在可预订房型（count>0）的酒店
         if (checkin && checkout) {
-            list = list.filter(h => Array.isArray(h.rooms) && h.rooms.some(r => (r.count || 0) > 0));
+            const beforeLength = list.length;
+            console.log(`📅 日期筛选前酒店数: ${beforeLength}, checkin=${checkin}, checkout=${checkout}`);
+            list = list.filter(h => {
+                const hasRooms = Array.isArray(h.rooms) && h.rooms.some(r => (r.count || 0) > 0);
+                if (!hasRooms) {
+                    console.log(`  ❌ 过滤掉: ${h.nameCn} - rooms:`, h.rooms);
+                }
+                return hasRooms;
+            });
+            console.log(`📅 日期筛选 (checkin=${checkin}): ${beforeLength} -> ${list.length}`);
         }
 
-        // 价格区间筛选（房型最低价） - 在省份优先逻辑之前应用，保证 matched/others 都是基于已过滤数据
+        // 价格区间筛选（房型最低价）
         if (minPrice || maxPrice) {
+            const beforeLength = list.length;
             list = list.filter(h => {
                 const minRoomPrice = h.rooms && h.rooms.length > 0 ? Math.min(...h.rooms.map(r => r.price)) : 0;
                 if (minPrice && minRoomPrice < parseInt(minPrice)) return false;
                 if (maxPrice && minRoomPrice > parseInt(maxPrice)) return false;
                 return true;
             });
-        }
-
-        // 省份匹配逻辑：只返回匹配省份/省内城市的酒店
-        if (province && province.trim()) {
-            const prov = province.trim();
-            const cities = provinceCities[prov] || [];
-            const matched = [];
-            for (const h of list) {
-                const addr = (h.address || '').toString();
-                let isMatch = false;
-                if (addr) {
-                    if (addr.includes(prov)) isMatch = true;
-                    for (const c of cities) {
-                        if (addr.includes(c)) { isMatch = true; break; }
-                    }
-                }
-                if (isMatch) matched.push(h);
-            }
-            list = matched;
+            console.log(`💰 价格筛选 (min=${minPrice}, max=${maxPrice}): ${beforeLength} -> ${list.length}`);
         }
 
         // 排序
@@ -144,10 +198,22 @@ router.get('/', (req, res) => {
         const total = list.length;
         const pagedList = list.slice((page - 1) * pageSize, page * pageSize);
 
+        console.log('分页前总数:', total);
+        console.log('分页参数 - page:', page, 'pageSize:', pageSize);
+        console.log('分页后返回数量:', pagedList.length);
+        console.log('========================================');
+
+        // 移除临时的匹配优先级字段
+        const cleanedList = pagedList.map(h => {
+            const { _matchPriority, _matchScore, ...rest } = h;
+            return rest;
+        });
+
         res.json({
             success: true,
-            data: pagedList,
-            total: total
+            data: cleanedList,
+            total: total,
+            hasSearchConditions: hasSearchConditions
         });
     } catch (err) {
         res.status(500).json({ success: false, message: "服务器内部错误" });
