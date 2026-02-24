@@ -160,7 +160,7 @@ const HotelDetail = () => {
           </Space>
         }
       >
-        {/* 3. 基础信息展示区 */}
+        {/* 基础信息展示区 */}
         <Descriptions bordered column={2}>
           <Descriptions.Item label="酒店地址" span={2}>
             {detail.address}
@@ -215,7 +215,7 @@ const HotelDetail = () => {
           <div style={{ color: '#999' }}>暂无上传图片</div>
         )}
 
-        {/* 4. 房型列表展示区 (Table) */}
+        {/* 房型列表展示区 (Table) */}
         <Divider orientation="left">房型列表</Divider>
 
         <Table
