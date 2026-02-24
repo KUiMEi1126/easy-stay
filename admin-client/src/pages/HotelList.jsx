@@ -74,9 +74,28 @@ const handleToggleOnline = async (record) => {
     { title: '地址', dataIndex: 'address', key: 'address', ellipsis: true },
     { 
       title: '起步价', 
-      dataIndex: 'minPrice', 
       key: 'minPrice', 
-      render: (text) => <span style={{ color: 'red', fontWeight: 'bold' }}>￥{text} 起</span> 
+      render: (_, record) => {
+        // 获取房型数组，防止为 undefined
+        const rooms = record.rooms || [];
+
+        // 如果没有房型，显示提示
+        if (rooms.length === 0) {
+          return <span style={{ color: '#999', fontSize: 12 }}>暂无房型</span>;
+        }
+
+        // 提取所有价格并计算最小值
+        // map 把 [{price:500}, {price:800}] 变成 [500, 800]
+        const prices = rooms.map(r => Number(r.price)); 
+        const minPrice = Math.min(...prices); // 使用 ES6 扩展运算符求最小值
+
+        // 渲染
+        return (
+          <span style={{ color: '#cf1322', fontWeight: 'bold' }}>
+            ￥{minPrice} <span style={{ fontSize: 12, color: '#666', fontWeight: 'normal' }}>起</span>
+          </span>
+        );
+      }
     },
      {
         title: '状态',

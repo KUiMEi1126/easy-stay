@@ -90,8 +90,8 @@ const Dashboard = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <h2 style={{ marginBottom: 24 }}>
-        早安，{localStorage.getItem('currentUserIdentity')} 
+      <h2 style={{ marginBottom: 24, fontSize: 38, fontWeight: 'bold' }}>
+        早安，{localStorage.getItem('lastLoginUsername') || '管理员/商户'}
         <span style={{ fontSize: 14, color: '#999', marginLeft: 10 }}>
             ({isAdmin ? '管理员' : '酒店商户'})
         </span>
