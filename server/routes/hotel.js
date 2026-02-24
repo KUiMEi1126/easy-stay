@@ -9,7 +9,7 @@ const getDbData = () => {
     return JSON.parse(data);
 };
 
-// 1. 获取酒店列表接口 (GET /api/hotel)
+// 获取酒店列表接口 (GET /api/hotel)
 router.get('/', (req, res) => {
     try {
         const db = getDbData();

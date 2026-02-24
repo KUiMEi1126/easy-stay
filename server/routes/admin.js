@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { readDb, writeDb } = require('../utils/db');
 
-// 1. 获取所有酒店列表
+// 获取所有酒店列表
 router.get('/hotels', async (req, res) => {
   const db = await readDb();
-  // 真实项目中这里应该做分页，这里直接返回全部
+  // 这里为了方便直接返回全部
   res.json(db.hotels);
 });
 
-// 2. 获取单个酒店详情
+// 获取单个酒店详情
 router.get('/hotels/:id', async (req, res) => {
   const db = await readDb();
   const hotel = db.hotels.find(h => h.id === parseInt(req.params.id));
@@ -20,7 +20,7 @@ router.get('/hotels/:id', async (req, res) => {
   }
 });
 
-// 3. 更新状态 (审核通过/驳回/上下线)
+// 更新状态 (审核通过/驳回/上下线)
 // 前端请求示例: PATCH /api/admin/hotels/1 { status: 'approved', isOnline: false }
 router.patch('/hotels/:id', async (req, res) => {
   const db = await readDb();
@@ -34,7 +34,7 @@ router.patch('/hotels/:id', async (req, res) => {
         ...db.hotels[index], 
         status: status !== undefined ? status : db.hotels[index].status,
         isOnline: isOnline !== undefined ? isOnline : db.hotels[index].isOnline,
-        // 如果有驳回理由则更新，没有则保持原样或清空(取决于业务逻辑，这里简单处理为更新)
+        // 如果有驳回理由则更新，没有则保持原样或清空。这里简单处理为更新
         rejectReason: rejectReason || db.hotels[index].rejectReason 
     };
 

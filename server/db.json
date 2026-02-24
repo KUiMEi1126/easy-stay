@@ -211,7 +211,8 @@
       ],
       "status": "approved",
       "isOnline": false,
-      "rating": 5
+      "rating": 5,
+      "rejectReason": "测试"
     }
   ]
 }

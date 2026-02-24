@@ -33,7 +33,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
   }
 
   // 生成访问 URL
-  // 注意：这里硬编码了 localhost:3000，生产环境应该是域名
+  // 这里硬编码了 localhost:3000，生产环境应该是域名
   const fileUrl = `http://localhost:3000/uploads/${file.filename}`;
   
   // 这里对应前端 Upload 组件的 response

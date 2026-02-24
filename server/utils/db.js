@@ -1,6 +1,5 @@
 const fs = require('fs').promises;
 const path = require('path');
-
 const DB_PATH = path.join(__dirname, '../db.json');
 
 // 读取数据
