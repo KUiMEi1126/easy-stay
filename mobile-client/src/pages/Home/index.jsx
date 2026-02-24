@@ -179,13 +179,17 @@ const Home = () => {
     const params = new URLSearchParams();
     // 只有 province 有效且不为 UNKNOWN 时才传
     if (province && province !== UNKNOWN_PROVINCE) params.set('province', province);
-    if (keyword) params.set('keyword', keyword);
+    // 如果有 tag，不传 keyword；否则传 keyword
+    if (finalTag) {
+      params.set('tag', finalTag);
+    } else if (keyword) {
+      params.set('keyword', keyword);
+    }
     if (dateRange.checkin) params.set('checkin', dateRange.checkin);
     if (dateRange.checkout) params.set('checkout', dateRange.checkout);
     if (star) params.set('star', star);
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
-    if (finalTag) params.set('tag', finalTag);
 
     navigate(`/list?${params.toString()}`);
   };
@@ -195,15 +199,16 @@ const Home = () => {
   };
 
   return (
-    <div style={{ background: '#f5f7f9', minHeight: '100vh' }}>
-      <div style={{ height: 200, marginBottom: 18 }}>
+    <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', minHeight: '100vh', paddingBottom: 80 }}>
+      {/* 顶部轮播 */}
+      <div style={{ height: 240, marginBottom: 20, position: 'relative' }}>
         {banners && banners.length > 0 ? (
           <Swiper
             modules={[Autoplay, Pagination]}
             spaceBetween={0}
             slidesPerView={1}
             loop={banners.length > 1}
-            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            autoplay={{ delay: 3500, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             style={{ height: '100%' }}
           >
@@ -211,43 +216,89 @@ const Home = () => {
               <SwiperSlide key={b.id}>
                 <div style={{ height: '100%', position: 'relative', cursor: 'pointer' }} onClick={() => navigate(`/detail/${b.id}`)}>
                   <img src={b.img} alt={b.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', bottom: 16, left: 16, color: '#fff', textShadow: '0 2px 6px rgba(0,0,0,0.6)' }}>
-                    <div style={{ fontSize: 18, fontWeight: 700 }}>{b.title}</div>
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.4))' }} />
+                  <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20, color: '#fff' }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>{b.title}</div>
+                    <div style={{ fontSize: 13, marginTop: 4, opacity: 0.9 }}>点击查看详情</div>
                   </div>
                 </div>
               </SwiperSlide>
             ))}
           </Swiper>
         ) : (
-          <div style={{ height: '100%', background: '#ddd' }} />
+          <div style={{ height: '100%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ color: '#fff', fontSize: 24, fontWeight: 600 }}>EasyStay 酒店预订</div>
+          </div>
         )}
       </div>
 
-      <div style={{ margin: '0 15px', background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 6px 18px rgba(0,0,0,0.06)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: '1px solid #f0f0f0' }}>
-          <div style={{ fontSize: 18, fontWeight: 600 }}>
-            <select value={province} onChange={handleProvinceChange} style={{ fontSize: 16, border: 'none', background: 'transparent', outline: 'none' }}>
-              <option value={UNKNOWN_PROVINCE}>默认</option>
+      {/* 搜索卡片 */}
+      <div style={{ margin: '0 16px', background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
+        {/* 地区选择 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 16, borderBottom: '2px solid #f5f5f5' }}>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <MapPin size={20} color="#667eea" />
+            <select value={province} onChange={handleProvinceChange} style={{ fontSize: 18, fontWeight: 600, border: 'none', background: 'transparent', outline: 'none', marginLeft: 8, flex: 1, color: '#333' }}>
+              <option value={UNKNOWN_PROVINCE}>📍 选择目的地</option>
               {provincesList.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
-          <div style={{ color: '#0086F6', cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={handleLocate}>
-            <MapPin size={16} /> <span style={{ marginLeft: 6 }}>自动定位</span>
+          <div 
+            style={{ color: '#667eea', cursor: 'pointer', display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 500, padding: '6px 12px', background: '#f0f3ff', borderRadius: 20 }} 
+            onClick={handleLocate}
+          >
+            <MapPin size={14} /> <span style={{ marginLeft: 4 }}>定位</span>
           </div>
         </div>
 
+        {/* 日期选择 */}
         <div style={{ position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f0f0f0', cursor: 'pointer' }} onClick={() => setShowCalendar(v => !v)}>
-          <Calendar size={18} color="#999" />
-          <div style={{ marginLeft: 12, flex: 1 }}>
-            <div style={{ fontSize: 12, color: '#999' }}>入住 - 离店</div>
-            <div style={{ fontSize: 15, fontWeight: 500 }}>{dateRange.checkin ? `${dateRange.checkin} - ${dateRange.checkout}` : '请选择日期' }{dateRange.nights ? <span style={{ color: '#0086F6', marginLeft: 6 }}>共{dateRange.nights}晚</span> : null}</div>
-          </div>
-            <ChevronRight size={18} color="#ccc" />
+          <div 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              padding: '16px 0', 
+              borderBottom: '2px solid #f5f5f5', 
+              cursor: 'pointer',
+              transition: 'all 0.3s'
+            }} 
+            onClick={() => setShowCalendar(v => !v)}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={{ 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+              width: 44, 
+              height: 44, 
+              borderRadius: 12, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
+            }}>
+              <Calendar size={22} color="#fff" />
+            </div>
+            <div style={{ marginLeft: 14, flex: 1 }}>
+              <div style={{ fontSize: 12, color: '#999', fontWeight: 500 }}>入住 - 离店</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#333', marginTop: 2 }}>
+                {dateRange.checkin ? `${dateRange.checkin} - ${dateRange.checkout}` : '请选择日期' }
+                {dateRange.nights ? <span style={{ color: '#667eea', marginLeft: 8, fontSize: 14 }}>({dateRange.nights}晚)</span> : null}
+              </div>
+            </div>
+            <ChevronRight size={20} color="#ccc" />
           </div>
 
           {showCalendar && (
-            <div ref={calendarRef} style={{ position: 'absolute', left: 10, right: 10, top: 66, zIndex: 9999, background: '#fff', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: 12 }}>
+            <div ref={calendarRef} style={{ 
+              position: 'absolute', 
+              left: -20, 
+              right: -20, 
+              top: 76, 
+              zIndex: 9999, 
+              background: '#fff', 
+              borderRadius: 12, 
+              boxShadow: '0 12px 40px rgba(0,0,0,0.18)', 
+              padding: 16 
+            }}>
               <DateRange
                 editableDateInputs={true}
                 onChange={handleDateChange}
@@ -258,55 +309,177 @@ const Home = () => {
                 minDate={new Date()}
                 locale={zhCN}
               />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                <button onClick={() => setShowCalendar(false)} style={{ padding: '8px 12px', background: '#0086F6', color: '#fff', border: 'none', borderRadius: 6 }}>确定</button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                <button 
+                  onClick={() => setShowCalendar(false)} 
+                  style={{ 
+                    padding: '10px 24px', 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                    color: '#fff', 
+                    border: 'none', 
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  确定
+                </button>
               </div>
             </div>
           )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0' }}>
-          <Search size={18} color="#999" />
-          <input placeholder="搜索酒店/地标/关键词" value={keyword} onChange={e => setKeyword(e.target.value)} style={{ ...inputStyle, marginLeft: 12, flex: 1 }} />
+        {/* 关键词搜索 */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '16px 0', borderBottom: '2px solid #f5f5f5' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+            width: 44, 
+            height: 44, 
+            borderRadius: 12, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center' 
+          }}>
+            <Search size={22} color="#fff" />
+          </div>
+          <input 
+            placeholder="搜索酒店/地标/关键词" 
+            value={keyword} 
+            onChange={e => setKeyword(e.target.value)} 
+            style={{ 
+              ...inputStyle, 
+              marginLeft: 14, 
+              flex: 1, 
+              border: 'none', 
+              fontSize: 16,
+              background: 'transparent'
+            }} 
+          />
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-          <select value={star} onChange={e => setStar(e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #eee' }}>
-            <option value="">星级不限</option>
-            <option value="5">五星</option>
-            <option value="4">四星</option>
-            <option value="3">三星</option>
-            <option value="2">二星</option>
+        {/* 筛选条件 */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 16, flexWrap: 'wrap' }}>
+          <select 
+            value={star} 
+            onChange={e => setStar(e.target.value)} 
+            style={{ 
+              padding: '10px 14px', 
+              borderRadius: 10, 
+              border: '2px solid #f0f0f0',
+              fontSize: 14,
+              fontWeight: 500,
+              color: star ? '#667eea' : '#666',
+              background: star ? '#f0f3ff' : '#fff',
+              flex: 1,
+              minWidth: 90
+            }}
+          >
+            <option value="">⭐ 星级</option>
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
           </select>
 
           <input
             type="text"
             inputMode="numeric"
-            placeholder="最低价"
+            placeholder="💰 最低价"
             value={minPrice}
             onChange={e => { setMinPrice(e.target.value); setMinPriceError(false); }}
-            style={{ ...inputStyle, width: 90, border: minPriceError ? '1px solid #ff4d4f' : '1px solid #eee' }}
+            style={{ 
+              ...inputStyle, 
+              flex: 1,
+              minWidth: 80,
+              padding: '10px 14px',
+              fontSize: 14,
+              borderRadius: 10,
+              border: minPriceError ? '2px solid #ff4d4f' : '2px solid #f0f0f0',
+              fontWeight: 500
+            }}
           />
           <input
             type="text"
             inputMode="numeric"
-            placeholder="最高价"
+            placeholder="💰 最高价"
             value={maxPrice}
             onChange={e => { setMaxPrice(e.target.value); setMaxPriceError(false); }}
-            style={{ ...inputStyle, width: 90, border: maxPriceError ? '1px solid #ff4d4f' : '1px solid #eee' }}
+            style={{ 
+              ...inputStyle, 
+              flex: 1,
+              minWidth: 80,
+              padding: '10px 14px',
+              fontSize: 14,
+              borderRadius: 10,
+              border: maxPriceError ? '2px solid #ff4d4f' : '2px solid #f0f0f0',
+              fontWeight: 500
+            }}
           />
-
-          <button onClick={() => handleSearch()} style={{ marginLeft: 'auto', padding: '8px 16px', background: '#0086F6', color: '#fff', border: 'none', borderRadius: 8 }}>搜索酒店</button>
         </div>
+
+        {/* 搜索按钮 */}
+        <button 
+          onClick={() => handleSearch()} 
+          style={{ 
+            width: '100%',
+            marginTop: 18, 
+            padding: '14px', 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+            color: '#fff', 
+            border: 'none', 
+            borderRadius: 12,
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+            transition: 'all 0.3s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          🔍 搜索酒店
+        </button>
       </div>
 
-      <div style={{ padding: '14px 16px' }}>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          {displayTags.map(t => (
-            <div key={t} onClick={() => handleSearch(t)} style={{ cursor: 'pointer', color: '#0086F6' }}>{t}</div>
-          ))}
+      {/* 热门标签 */}
+      {displayTags.length > 0 && (
+        <div style={{ padding: '20px 16px' }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: '#fff', marginBottom: 12, display: 'flex', alignItems: 'center' }}>
+            <span style={{ background: '#fff', width: 4, height: 16, borderRadius: 2, marginRight: 8 }}></span>
+            热门推荐
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {displayTags.map(t => (
+              <div 
+                key={t} 
+                onClick={() => handleSearch(t)} 
+                style={{ 
+                  cursor: 'pointer', 
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  color: '#fff',
+                  padding: '8px 16px',
+                  borderRadius: 20,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                {t}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
