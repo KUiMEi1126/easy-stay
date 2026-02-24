@@ -1,4 +1,36 @@
+# 依赖
 node_modules/
+
+# 构建输出
 dist/
+build/
+
+# 环境变量
 .env
+.env.local
+.env.*.local
+
+# 日志
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 数据库文件
+server/db.json
+
+# 用户上传的文件
+server/public/uploads/*
+!server/public/uploads/.gitkeep
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
 .DS_Store
+Thumbs.db

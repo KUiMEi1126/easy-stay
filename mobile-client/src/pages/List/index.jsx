@@ -35,7 +35,7 @@ const List = () => {
   const maxPrice = params.get('maxPrice') || '';
 
   // 顶部筛选状态
-  const [cityInput, setCityInput] = useState(city);
+  const [cityInput, setCityInput] = useState(keyword || city);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarState, setCalendarState] = useState([{ startDate: checkin ? new Date(checkin) : new Date(), endDate: checkout ? new Date(checkout) : new Date(Date.now()+24*3600*1000), key: 'selection' }]);
   const [dateRange, setDateRange] = useState({ checkin: checkin || '', checkout: checkout || '', nights: checkin && checkout ? Math.max(1, Math.round((new Date(checkout)-new Date(checkin))/(1000*3600*24))) : parseInt(localStorage.getItem('stayNights')) || 1 });
@@ -54,31 +54,71 @@ const List = () => {
     loadingRef.current = true;
     if (replace) setLoading(true); else setLoadingMore(true);
 
-    const paramsToSend = { province, city, keyword, checkin, checkout, star: starParam, tag: tagParam, minPrice, maxPrice, page: pageToLoad, pageSize };
+    // 如果有搜索条件，增加 pageSize 以确保显示所有匹配结果
+    const effectivePageSize = (province || city || keyword) ? 50 : pageSize;
+    const paramsToSend = { province, city, keyword, checkin, checkout, star: starParam, tag: tagParam, minPrice, maxPrice, page: pageToLoad, pageSize: effectivePageSize };
+
+    console.log('========== 开始搜索 ==========');
+    console.log('发送给后端的参数:', paramsToSend);
 
     getHotels(paramsToSend)
       .then(res => {
+        console.log('✅ Promise resolved - 进入then回调');
+        console.log('📦 原始后端响应:', res);
+        console.log('📦 res.data类型:', Array.isArray(res?.data) ? 'Array' : typeof res?.data);
+        console.log('📦 res.data内容:', res?.data);
+        
         const data = res && res.success ? res.data : res;
         const totalCount = res && typeof res.total === 'number' ? res.total : (Array.isArray(data) ? data.length : 0);
         const listData = Array.isArray(data) ? data : [];
 
+        console.log('后端返回的酒店数量:', listData.length);
+        console.log('后端返回的总数:', totalCount);
+        console.log('URL参数 - province:', province, 'city:', city, 'keyword:', keyword);
+        if (listData.length > 0) {
+          console.log('前5个酒店:', listData.slice(0, 5).map(h => ({ 
+            id: h.id, 
+            name: h.nameCn, 
+            address: h.address 
+          })));
+        }
+
         setTotal(totalCount);
         setHotels(prev => {
           const merged = replace ? listData : [...prev, ...listData];
-          if (pageToLoad === 1) {
-            const ids = merged.map(h => h.id);
-            loadOtherHotels(ids);
-          }
+          console.log('🔄 更新hotels state:', { 
+            replace, 
+            prev长度: prev.length, 
+            listData长度: listData.length, 
+            merged长度: merged.length 
+          });
           return merged;
         });
-        setHasMore(pageToLoad * pageSize < totalCount);
+        const effectivePageSize = (province || city || keyword) ? 50 : pageSize;
+        setHasMore(pageToLoad * effectivePageSize < totalCount);
         setPage(pageToLoad);
+        
+        // 只在第一页加载其他酒店推荐
+        if (pageToLoad === 1 && listData.length < 10) {
+          const ids = listData.map(h => h.id);
+          loadOtherHotels(ids);
+        } else if (pageToLoad === 1) {
+          setOtherHotels([]);
+        }
       })
       .catch(err => {
-        console.error("加载失败:", err);
+        console.error("❌ Promise rejected - 进入catch回调");
+        console.error("❌ 加载失败:", err);
+        console.error("❌ 错误详情:", { 
+          message: err.message, 
+          response: err.response,
+          status: err.response?.status,
+          data: err.response?.data
+        });
         if (replace) setHotels([]);
       })
       .finally(() => {
+        console.log('🏁 Promise finally - 请求结束');
         loadingRef.current = false;
         setLoading(false);
         setLoadingMore(false);
@@ -150,75 +190,89 @@ const List = () => {
     }
     return 0;
   });
-  const isSearching = !!(province || cityInput || keyword || filterStar || filterTag || filterMinPrice || filterMaxPrice);
-
-  const provinceCities = {
-    '北京': ['北京'],
-    '天津': ['天津'],
-    '上海': ['上海'],
-    '重庆': ['重庆'],
-    '河北': ['石家庄','唐山','秦皇岛','邯郸','邢台','保定','张家口','承德','沧州','廊坊','衡水'],
-    '山西': ['太原','大同','阳泉','长治','晋城','朔州','晋中','运城','忻州','临汾','吕梁'],
-    '辽宁': ['沈阳','大连','鞍山','抚顺','本溪','丹东','锦州','营口','阜新','辽阳','盘锦','铁岭','朝阳','葫芦岛'],
-    '吉林': ['长春','吉林','四平','辽源','通化','白山','松原','白城','延边'],
-    '黑龙江': ['哈尔滨','齐齐哈尔','牡丹江','佳木斯','大庆','鸡西','双鸭山','伊春','鹤岗','七台河','黑河','绥化'],
-    '江苏': ['南京','无锡','徐州','常州','苏州','南通','连云港','淮安','盐城','扬州','镇江','泰州','宿迁'],
-    '浙江': ['杭州','宁波','温州','嘉兴','湖州','绍兴','金华','衢州','舟山','台州','丽水'],
-    '安徽': ['合肥','芜湖','蚌埠','淮南','马鞍山','淮北','铜陵','安庆','黄山','滁州','阜阳','宿州','巢湖','六安','亳州','池州','宣城'],
-    '福建': ['福州','厦门','莆田','三明','泉州','漳州','南平','龙岩','宁德'],
-    '江西': ['南昌','景德镇','九江','上饶','抚州','赣州','吉安','宜春','鹰潭','萍乡','新余'],
-    '山东': ['济南','青岛','淄博','枣庄','东营','烟台','潍坊','济宁','泰安','威海','日照','莱芜','临沂','德州','聊城','滨州','菏泽'],
-    '河南': ['郑州','开封','洛阳','平顶山','安阳','鹤壁','新乡','焦作','濮阳','许昌','漯河','三门峡','南阳','商丘','信阳','周口','驻马店','济源'],
-    '湖北': ['武汉','黄石','十堰','荆州','宜昌','襄阳','鄂州','荆门','孝感','黄冈','咸宁','随州','恩施'],
-    '湖南': ['长沙','株洲','湘潭','衡阳','邵阳','岳阳','常德','张家界','益阳','郴州','永州','怀化','娄底','湘西'],
-    '广东': ['广州','深圳','珠海','汕头','佛山','韶关','湛江','肇庆','江门','茂名','惠州','梅州','汕尾','阳江','清远','东莞','中山','潮州','揭阳','云浮'],
-    '广西': ['南宁','柳州','桂林','梧州','北海','防城港','钦州','贵港','玉林','百色','河池','来宾','崇左'],
-    '海南': ['海口','三亚','三沙','儋州'],
-    '四川': ['成都','绵阳','自贡','攀枝花','泸州','德阳','遂宁','内江','乐山','南充','眉山','宜宾','广安','达州','雅安','巴中','资阳'],
-    '贵州': ['贵阳','六盘水','遵义','安顺','铜仁','毕节','黔东南','黔南','黔西南'],
-    '云南': ['昆明','大理','丽江','曲靖','玉溪','昭通','保山','临沧','红河','文山','普洱','德宏','怒江','迪庆','楚雄','西双版纳'],
-    '西藏': ['拉萨','日喀则','昌都','林芝','山南','那曲','阿里'],
-    '陕西': ['西安','咸阳','宝鸡','渭南','汉中','安康','商洛','榆林','铜川'],
-    '甘肃': ['兰州','嘉峪关','金昌','白银','天水','武威','张掖','平凉','酒泉','庆阳','定西','陇南'],
-    '青海': ['西宁','海东','海北','黄南','海南','果洛','玉树','海西'],
-    '宁夏': ['银川','石嘴山','吴忠','固原','中卫'],
-    '新疆': ['乌鲁木齐','克拉玛依','石河子','喀什','和田','阿克苏','巴音郭楞','昌吉','吐鲁番','哈密','博尔塔拉','伊犁','克孜勒苏','塔城','阿勒泰'],
-    '香港': ['香港'],
-    '澳门': ['澳门'],
-    '台湾': ['台北','高雄','台中','台南','桃园']
+  
+  // 后端已经按优先级排序，前端直接使用
+  const finalHotels = sortedHotels;
+  
+  console.log('🔍 调试：hotels state长度:', hotels.length);
+  console.log('🔍 调试：sortedHotels长度:', sortedHotels.length);
+  console.log('🔍 调试：finalHotels长度:', finalHotels.length);
+  
+  // 判断是否有搜索条件（province、city、keyword、筛选条件等）
+  const isSearching = !!(province || city || keyword || filterStar || filterTag || filterMinPrice || filterMaxPrice);
+  
+  // 判断哪些酒店匹配搜索条件（用于显示分割线）
+  // 注意：星级、标签、价格筛选由后端处理，这里只判断地址和关键词匹配
+  const getMatchedHotels = () => {
+    if (!isSearching) return finalHotels;
+    
+    // 如果有标签/星级/价格筛选（后端已处理），所有返回的酒店都算匹配
+    if (filterTag || filterStar || filterMinPrice || filterMaxPrice) {
+      return finalHotels;
+    }
+    
+    // 如果只有地址或关键词搜索，需要前端进行匹配判断
+    if (!province && !city && !keyword) {
+      return finalHotels;
+    }
+    
+    return finalHotels.filter(h => {
+      const address = (h.address || '').toLowerCase();
+      const nameCn = (h.nameCn || '').toLowerCase();
+      const nameEn = (h.nameEn || '').toLowerCase();
+      const tags = Array.isArray(h.tags) ? h.tags.map(t => t.toLowerCase()) : [];
+      
+      // 检查省份匹配
+      let provinceMatch = false;
+      if (province) {
+        provinceMatch = address.includes(province.toLowerCase());
+      }
+      
+      // 检查城市匹配
+      let cityMatch = false;
+      if (city) {
+        cityMatch = address.includes(city.toLowerCase());
+      }
+      
+      // 检查关键词匹配
+      let keywordMatch = false;
+      if (keyword) {
+        const kwList = keyword.toLowerCase().split(/[-—、\s]+/).map(s => s.trim()).filter(Boolean);
+        keywordMatch = kwList.some(kw =>
+          nameCn.includes(kw) ||
+          nameEn.includes(kw) ||
+          tags.some(t => t.includes(kw))
+        );
+      }
+      
+      // OR逻辑：只要省份、城市或关键词任一匹配即可
+      return provinceMatch || cityMatch || keywordMatch;
+    });
   };
-
-  // 根据定位/选择的地址优先展示
-  let finalHotels = sortedHotels;
-  const activeKeyword = cityInput || keyword;
-  const keywordParts = activeKeyword ? activeKeyword.split(/[-—\s]+/).map(s => s.trim()).filter(Boolean) : [];
-  const provinceParts = province ? Array.from(new Set([province, ...(provinceCities[province] || [])])) : [];
-  const preferredLocations = Array.from(new Set([...provinceParts, ...keywordParts])).filter(Boolean);
-
-  if (preferredLocations.length > 0) {
-    const matched = finalHotels.filter(h => preferredLocations.some(p => (h.address || '').includes(p)));
-    const others = finalHotels.filter(h => !preferredLocations.some(p => (h.address || '').includes(p)));
-    finalHotels = matched.length > 0 ? [...matched, ...others] : finalHotels;
+  
+  const matchedHotels = getMatchedHotels();
+  
+  // 调试日志
+  console.log('========== 前端匹配逻辑 ==========');
+  console.log('总酒店数量:', finalHotels.length);
+  console.log('是否在搜索:', isSearching);
+  console.log('搜索条件 - province:', province, 'city:', city, 'keyword:', keyword);
+  console.log('匹配的酒店数量:', matchedHotels.length);
+  if (matchedHotels.length > 0) {
+    console.log('匹配的前5个酒店:', matchedHotels.slice(0, 5).map(h => ({ 
+      name: h.nameCn, 
+      address: h.address 
+    })));
   }
-
-  const matchByQuery = (hotel) => {
-    const addr = (hotel.address || '').toString();
-    const matchProvince = provinceParts.length ? provinceParts.some(p => addr.includes(p)) : true;
-    const matchKeyword = keywordParts.length ? keywordParts.some(p => {
-      const nameCn = (hotel.nameCn || '').toLowerCase();
-      const nameEn = (hotel.nameEn || '').toLowerCase();
-      const address = (hotel.address || '').toLowerCase();
-      const tags = Array.isArray(hotel.tags) ? hotel.tags.map(t => t.toLowerCase()) : [];
-      const p_lower = p.toLowerCase();
-      return nameCn.includes(p_lower) || nameEn.includes(p_lower) || address.includes(p_lower) || tags.some(t => t.includes(p_lower));
-    }) : true;
-    return matchProvince && matchKeyword;
-  };
-
-  const primaryHotels = isSearching ? finalHotels.filter(matchByQuery) : finalHotels;
-  const secondaryFromSearch = isSearching ? finalHotels.filter(h => !matchByQuery(h)) : [];
-  const secondaryHotels = isSearching
-    ? [...secondaryFromSearch, ...otherHotels].filter((h, idx, arr) => arr.findIndex(x => x.id === h.id) === idx)
+  console.log('========================================');
+  
+  const unmatchedHotels = isSearching 
+    ? finalHotels.filter(h => !matchedHotels.includes(h))
+    : [];
+  
+  // 合并其他酒店推荐（去重）
+  const allUnmatchedHotels = isSearching
+    ? [...unmatchedHotels, ...otherHotels].filter((h, idx, arr) => arr.findIndex(x => x.id === h.id) === idx)
     : otherHotels;
 
   // 日历选择
@@ -348,12 +402,12 @@ const List = () => {
 
       {/* 酒店列表 */}
       <div style={{ padding: '12px' }}>
-        {primaryHotels.length === 0 && !loadingMore && (
+        {matchedHotels.length === 0 && !loadingMore && (
           <div style={{ textAlign: 'center', color: '#999', padding: '18px 0' }}>
             未找到匹配酒店
           </div>
         )}
-        {primaryHotels.map(hotel => (
+        {matchedHotels.map(hotel => (
           <div 
             key={hotel.id} 
             onClick={() => navigate(`/detail/${hotel.id}`)}
@@ -392,7 +446,7 @@ const List = () => {
             正在加载更多酒店...
           </div>
         )}
-        {isSearching && secondaryHotels.length > 0 && (
+        {isSearching && allUnmatchedHotels.length > 0 && (
           <div style={{ marginTop: 24, marginBottom: 8 }}>
             <div style={{ height: 12 }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#999', fontSize: 12, margin: '12px 0' }}>
@@ -402,7 +456,7 @@ const List = () => {
             </div>
             <div style={{ height: 12 }} />
 
-            {secondaryHotels.map(hotel => (
+            {allUnmatchedHotels.map(hotel => (
               <div 
                 key={`other-${hotel.id}`} 
                 onClick={() => navigate(`/detail/${hotel.id}`)}

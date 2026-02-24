@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // 1. 创建 axios 实例，配置基础路径
 const request = axios.create({
-  // 注意：如果你在手机预览，localhost 要换成你电脑的 IP 地址
-  baseURL: 'http://localhost:3000/api', 
+  // 以太网IP：192.168.3.25（同时支持以太网和WiFi访问）
+  baseURL: 'http://192.168.3.25:3000/api', 
   timeout: 5000, // 超过5秒没响应就报错
 });
 
