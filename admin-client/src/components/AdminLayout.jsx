@@ -73,7 +73,7 @@ const AdminLayout = () => {
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible>
         <div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)', textAlign: 'center', color: '#fff', lineHeight: '32px' }}>
-          易宿酒店管理系统
+          
         </div>
         <Menu
           theme="dark"
@@ -85,7 +85,8 @@ const AdminLayout = () => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>易宿酒店管理系统</div>
           <Dropdown
             menu={{
               items: [

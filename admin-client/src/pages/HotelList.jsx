@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Space, Button, Modal, message, Rate, Popconfirm } from 'antd';
+import { Table, Tag, Space, Button, Modal, message, Rate, Popconfirm, Radio, Card } from 'antd';
 import { useNavigate } from 'react-router-dom'; // 1. 引入路由钩子
 import request from '../utils/request';
 
@@ -16,6 +16,8 @@ const HotelList = () => {
   const [data, setData] = useState([]); // 初始为空数组
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // 2. 获取 navigate 实例
+   // 筛选状态 ('all' | 'pending' | 'online' | 'offline')
+  const [filterType, setFilterType] = useState('all');
 
   // 跳转到详情页
   const handleDetail = (id) => {
@@ -33,7 +35,7 @@ const fetchHotels = async () => {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchHotels();
   }, []);
@@ -50,7 +52,24 @@ const handleToggleOnline = async (record) => {
       // 错误处理由拦截器接管
     }
   };
-
+ // 3. 核心逻辑：根据筛选状态计算要显示的数据
+const getFilteredData = () => {
+  switch (filterType) {
+    case 'pending':
+      // 筛选：未审核 (待审核)
+      return data.filter(item => item.status === 'pending');
+    case 'online':
+      // 筛选：已上线 (审核通过 且 在线)
+      return data.filter(item => item.status === 'approved' && item.isOnline);
+    case 'offline':
+      // 筛选：未上线 (审核通过 且 不在线)
+      return data.filter(item => item.status === 'approved' && !item.isOnline);
+    case 'all':
+    default:
+       // 显示全部
+    return data;
+  }
+};
 
   // 表格列定义
   const columns = [
@@ -124,7 +143,35 @@ const handleToggleOnline = async (record) => {
       <div style={{ marginBottom: 16 }}>
          <h2>酒店信息审核/管理</h2>
       </div>
-      <Table columns={columns} dataSource={data} rowKey="id" loading={loading} />
+       {/* 筛选工具栏 */}
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Space>
+            <span style={{ fontWeight: 'bold' }}>状态筛选：</span>
+            <Radio.Group 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value)}
+              buttonStyle="solid"
+            >
+              <Radio.Button value="all">全部酒店</Radio.Button>
+              <Radio.Button value="pending">待审核</Radio.Button>
+              <Radio.Button value="online">已上线 (营业中)</Radio.Button>
+              <Radio.Button value="offline">未上线 (已下线)</Radio.Button>
+            </Radio.Group>
+          </Space>
+          
+          {/* 右侧放一个统计数字 */}
+          <span style={{ color: '#888' }}>
+            共找到 {getFilteredData().length} 家酒店
+          </span>
+        </div>
+      </Card>
+       <Table 
+        dataSource={getFilteredData()} 
+        columns={columns} 
+        rowKey="id" 
+        loading={loading}
+      />
     </div>
   );
 };

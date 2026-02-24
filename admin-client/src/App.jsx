@@ -18,7 +18,7 @@ const PrivateRoute = ({ children }) => {
 };
 
 // 简单的设置页占位组件
-const Settings = () => <div style={{padding: 24, background:'#fff'}}><h2>系统设置</h2><p>此处可修改密码...</p></div>;
+const Settings = () => <div style={{padding: 24, background:'#fff'}}><h2>系统设置</h2><p>功能开发中...</p></div>;
 
 
 function App() {
