@@ -1,9 +1,11 @@
 import axios from 'axios';
 
+// 获取 API 地址（从环境变量或使用默认本地地址）
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // 1. 创建 axios 实例，配置基础路径
 const request = axios.create({
-  // 以太网IP：192.168.3.25（同时支持以太网和WiFi访问）
-  baseURL: 'http://192.168.3.25:3000/api', 
+  baseURL: `${API_URL}/api`,
   timeout: 5000, // 超过5秒没响应就报错
 });
 
