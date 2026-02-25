@@ -2,8 +2,8 @@
   "users": [
     {
       "id": 1771736729338,
-      "username": "shinku",
-      "password": "123456",
+      "username": "test2",
+      "password": "111111",
       "email": "",
       "identity": "merchant",
       "createTime": "2026-02-22T05:05:29.338Z"
@@ -17,202 +17,126 @@
       "createTime": "2026-02-22T05:42:19.355Z"
     },
     {
-      "id": 1771759927971,
-      "username": "ssss",
-      "password": "ssssss",
+      "id": 1772005075677,
+      "username": "test3",
+      "password": "111111",
       "email": "",
       "identity": "merchant",
-      "createTime": "2026-02-22T11:32:07.971Z"
-    },
-    {
-      "id": 1771849796175,
-      "username": "kuimei",
-      "password": "114514",
-      "email": "",
-      "identity": "admin",
-      "createTime": "2026-02-23T12:29:56.175Z"
+      "createTime": "2026-02-25T07:37:55.677Z"
     }
   ],
   "hotels": [
     {
       "id": 1,
-      "nameCn": "上海酒店1",
-      "nameEn": "Hotel 1",
-      "address": "上海市浦东新区街道39号",
-      "star": 2,
-      "rating": "4.5",
-      "openedAt": "2018-10-12",
+      "nameCn": "上海外滩华尔道夫酒店",
+      "nameEn": "Waldorf Astoria Shanghai",
+      "address": "上海市黄浦区中山东一路2号",
+      "star": 5,
+      "rating": "4.8",
+      "openedAt": "2010-06-18",
       "tags": [
-        "服务周到",
+        "外滩景观",
         "游泳池",
-        "外滩景观"
-      ],
-      "images": [
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800"
-      ],
-      "rooms": [
-        {
-          "name": "标准房",
-          "price": 1756,
-          "count": 12
-        },
-        {
-          "name": "豪华房",
-          "price": 2056,
-          "count": 10
-        }
-      ],
-      "status": "rejected",
-      "isOnline": false
-    },
-    {
-      "id": 2,
-      "nameCn": "南京酒店2",
-      "nameEn": "Hotel 2",
-      "address": "南京市天河区街道62号",
-      "star": 4,
-      "rating": "4.6",
-      "openedAt": "2012-04-05",
-      "tags": [
-        "游泳池",
-        "网红打卡",
+        "SPA",
         "自助早餐"
       ],
       "images": [
-        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800"
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
+        "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800"
       ],
       "rooms": [
         {
           "name": "标准房",
-          "price": 308,
-          "count": 2
+          "price": 1280,
+          "count": 20
         },
         {
           "name": "豪华房",
-          "price": 608,
-          "count": 8
-        }
-      ],
-      "status": "pending",
-      "isOnline": false
-    },
-    {
-      "id": 3,
-      "nameCn": "长沙酒店3",
-      "nameEn": "Hotel 3",
-      "address": "长沙市罗湖区街道99号",
-      "star": 5,
-      "rating": "3.1",
-      "openedAt": "2018-09-03",
-      "tags": [
-        "干净整洁",
-        "服务周到"
-      ],
-      "images": [
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800"
-      ],
-      "rooms": [
-        {
-          "name": "标准房",
-          "price": 331,
-          "count": 13
+          "price": 1880,
+          "count": 15
         },
         {
-          "name": "豪华房",
-          "price": 631,
-          "count": 17
+          "name": "总统套房",
+          "price": 5680,
+          "count": 3
         }
       ],
       "status": "approved",
       "isOnline": true
     },
     {
-      "id": 4,
-      "nameCn": "上海酒店4",
-      "nameEn": "Hotel 4",
-      "address": "上海市天河区街道99号",
-      "star": 2,
-      "rating": "3.3",
-      "openedAt": "2012-12-17",
-      "tags": [
-        "服务周到",
-        "SPA"
-      ],
-      "images": [
-        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800"
-      ],
-      "rooms": [
-        {
-          "name": "标准房",
-          "price": 2062,
-          "count": 3
-        },
-        {
-          "name": "豪华房",
-          "price": 2362,
-          "count": 14
-        }
-      ],
-      "status": "pending",
-      "isOnline": false
-    },
-    {
-      "id": 5,
-      "nameCn": "南京酒店5",
-      "nameEn": "Hotel 5",
-      "address": "南京市朝阳区街道94号",
-      "star": 3,
-      "rating": "4.8",
-      "openedAt": "2019-07-04",
-      "tags": [
-        "干净整洁",
-        "亲子推荐"
-      ],
-      "images": [
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"
-      ],
-      "rooms": [
-        {
-          "name": "标准房",
-          "price": 2171,
-          "count": 20
-        },
-        {
-          "name": "豪华房",
-          "price": 2471,
-          "count": 19
-        }
-      ],
-      "status": "pending",
-      "isOnline": false
-    },
-    {
-      "id": 1771841856198,
-      "ownerId": 2,
-      "nameCn": "棍母大酒店",
-      "nameEn": "Nothing Hotel",
-      "address": "吉吉国合成天下区道理大街b3号",
+      "id": 2,
+      "nameCn": "杭州西湖柏悦酒店",
+      "nameEn": "Park Hyatt Hangzhou",
+      "address": "杭州市上城区湖滨路28号",
       "star": 5,
-      "openedAt": "2020-02-22",
+      "rating": "4.6",
+      "openedAt": "2015-03-22",
       "tags": [
-        "电棍"
+        "湖景房",
+        "干净整洁",
+        "亲子推荐",
+        "服务周到"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800"
       ],
       "rooms": [
         {
-          "name": "职业房",
-          "price": 325,
-          "count": 18
+          "name": "标准房",
+          "price": 980,
+          "count": 25
+        },
+        {
+          "name": "豪华房",
+          "price": 1580,
+          "count": 12
         }
-      ],
-      "images": [
-        "http://localhost:3000/uploads/1771841852667-887196108.png",
-        "http://localhost:3000/uploads/1771850806273-382641377.jpg",
-        "http://localhost:3000/uploads/1771913556976-864934970.png"
       ],
       "status": "approved",
-      "isOnline": false,
-      "rating": 5,
-      "rejectReason": "测试"
+      "isOnline": true
+    },
+    {
+      "id": 1771736729338,
+      "ownerId": 2,
+      "nameCn": "成都太古里博舍酒店",
+      "nameEn": "The Temple House Chengdu",
+      "address": "成都市锦江区笔帖式街81号",
+      "star": 4,
+      "rating": "4.5",
+      "openedAt": "2018-11-08",
+      "tags": [
+        "网红打卡",
+        "设计感",
+        "美食推荐"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800",
+        "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800"
+      ],
+      "rooms": [
+        {
+          "name": "标准房",
+          "price": 680,
+          "count": 30
+        },
+        {
+          "name": "豪华房",
+          "price": 1080,
+          "count": 18
+        },
+        {
+          "name": "行政套房",
+          "price": 2280,
+          "count": 5
+        }
+      ],
+      "status": "approved",
+      "isOnline": true
     }
   ]
 }

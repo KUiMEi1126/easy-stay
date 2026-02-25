@@ -60,7 +60,7 @@ const Home = () => {
         const hotels = Array.isArray(data) ? data : [];
 
         // 从酒店图片中随机抽取最多 5 张作为轮播图
-        const candidates = hotels.filter(h => h.images && h.images.length > 0);
+        const candidates = hotels.filter(h => h.images && h.images.length > 0 && h.isOnline === true);
         if (candidates.length > 0) {
           const shuffledHotels = [...candidates].sort(() => 0.5 - Math.random());
           const picked = shuffledHotels.slice(0, Math.min(5, shuffledHotels.length));
@@ -71,7 +71,7 @@ const Home = () => {
         }
 
         const tagSet = new Set();
-        hotels.forEach(h => { if (Array.isArray(h.tags)) h.tags.forEach(t => tagSet.add(t)); });
+        hotels.filter(h => h.isOnline === true).forEach(h => { if (Array.isArray(h.tags)) h.tags.forEach(t => tagSet.add(t)); });
         const tagsArr = Array.from(tagSet);
         setAllTags(tagsArr);
         if (tagsArr.length > 0) {

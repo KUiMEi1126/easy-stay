@@ -69,8 +69,9 @@ const List = () => {
         console.log('📦 res.data内容:', res?.data);
         
         const data = res && res.success ? res.data : res;
-        const totalCount = res && typeof res.total === 'number' ? res.total : (Array.isArray(data) ? data.length : 0);
-        const listData = Array.isArray(data) ? data : [];
+        let listData = Array.isArray(data) ? data : [];
+        
+        const totalCount = res && typeof res.total === 'number' ? res.total : (Array.isArray(listData) ? listData.length : 0);
 
         console.log('后端返回的酒店数量:', listData.length);
         console.log('后端返回的总数:', totalCount);
@@ -145,13 +146,13 @@ const List = () => {
     loadOtherHotels([]);
   }, [location.search]);
 
-  // 获取全部 tags 用于详细筛选展示
+  // 获取全部 tags 用于详细筛选展示（只从在线酒店提取）
   useEffect(() => {
     getHotels().then(res => {
       const data = res.success ? res.data : res;
       const hotelsAll = Array.isArray(data) ? data : [];
       const tagSet = new Set();
-      hotelsAll.forEach(h => { if (Array.isArray(h.tags)) h.tags.forEach(t => tagSet.add(t)); });
+      hotelsAll.filter(h => h.isOnline === true).forEach(h => { if (Array.isArray(h.tags)) h.tags.forEach(t => tagSet.add(t)); });
       setAllTags(Array.from(tagSet));
     }).catch(()=>{});
   }, []);
@@ -191,8 +192,8 @@ const List = () => {
     return 0;
   });
   
-  // 后端已经按优先级排序，前端直接使用
-  const finalHotels = sortedHotels;
+  // 只显示 isOnline 为 true 的酒店
+  const finalHotels = sortedHotels.filter(h => h.isOnline === true);
   
   console.log('🔍 调试：hotels state长度:', hotels.length);
   console.log('🔍 调试：sortedHotels长度:', sortedHotels.length);
