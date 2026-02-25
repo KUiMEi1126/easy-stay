@@ -9,7 +9,6 @@ const Login = () => {
   const [form] = Form.useForm();
   // 记住我勾选状态（解决表单联动问题）
   const [rememberChecked, setRememberChecked] = useState(true);
-  // 顶部改为始终显示默认图标（不再尝试加载外部 login-image.jpg）
 
   // 登录核心逻辑：校验账号+密码+身份，按身份跳转
   const onFinish = async (values) => {

@@ -3,24 +3,21 @@
     {
       "id": 1771736729338,
       "username": "test2",
-      "password": "111111",
-      "email": "",
+      "password": "$2a$10$ueSEuFRb5g2Ct4lRtMBmx.YdOLcSPG2VxQFKLb7VSPqLMdwXOi992",
       "identity": "merchant",
       "createTime": "2026-02-22T05:05:29.338Z"
     },
     {
       "id": 1771738939355,
       "username": "test",
-      "password": "111111",
-      "email": "",
+      "password": "$2a$10$oXxzu37TzIYfk7BViCtH.O5WDLjMQkZN1gNM1oQCN58chb8WK74vS",
       "identity": "admin",
       "createTime": "2026-02-22T05:42:19.355Z"
     },
     {
       "id": 1772005075677,
       "username": "test3",
-      "password": "111111",
-      "email": "",
+      "password": "$2a$10$lVt3TtuJdvas5FkaY9A3sea/qw//IGkmWkBqzpXZCU4kOqvz65OHa",
       "identity": "merchant",
       "createTime": "2026-02-25T07:37:55.677Z"
     }

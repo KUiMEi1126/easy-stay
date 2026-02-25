@@ -21,6 +21,7 @@ yarn-error.log*
 # 用户上传的文件
 server/public/uploads/*
 !server/public/uploads/.gitkeep
+README.md
 
 # 编辑器配置
 .history/
