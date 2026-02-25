@@ -35,6 +35,14 @@ const Login = () => {
       localStorage.setItem('lastLoginUsername', username);
       localStorage.setItem('currentUserIdentity', matchedUser.identity);
 
+      if (matchedUser.id != null) {
+        localStorage.setItem('userId', matchedUser.id);
+      }
+
+      // 新增：将完整用户对象序列化保存在 localStorage.user
+      // 这样 request 拦截器就可以读取并把 user.id 放在请求头中
+      localStorage.setItem('user', JSON.stringify(matchedUser));
+
       // 记住我逻辑（仍保存在 localStorage，但用户数据来自服务端）
       const rememberedUserInfo = JSON.parse(localStorage.getItem('rememberedUserInfo')) || {};
       if (remember) {
