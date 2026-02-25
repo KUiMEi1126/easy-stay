@@ -23,6 +23,7 @@ server/public/uploads/*
 !server/public/uploads/.gitkeep
 
 # 编辑器配置
+.history/
 .vscode/
 .idea/
 *.swp
