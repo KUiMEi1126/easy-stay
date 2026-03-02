@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, Button, Form, Input, Select, message, Space } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import request from '../utils/request';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -17,22 +18,17 @@ const Register = () => {
     }
 
     try {
-      const resp = await fetch('/api/user/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, email, identity })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        message.error(data.message || '注册失败');
-        return;
-      }
+      await request.post('/user/register', { username, password, email, identity });
 
       message.success('注册成功！请登录');
       form.resetFields();
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
-      message.error('注册失败：' + err.message);
+      if (err?.response?.status === 404) {
+        message.error('注册接口未找到，请检查 VITE_API_URL 或服务器反向代理配置');
+        return;
+      }
+      message.error('注册失败，请稍后重试');
     }
   };
 

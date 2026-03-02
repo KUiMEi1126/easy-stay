@@ -3,6 +3,7 @@ import { Card, Button, Form, Input, Checkbox, message, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
+import request from '../utils/request';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,17 +16,7 @@ const Login = () => {
     const { username, password, remember } = values;
 
     try {
-      const resp = await fetch('/api/user/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        message.error(data.message || '用户名或密码错误！');
-        return;
-      }
-
+      const data = await request.post('/user/login', { username, password });
       const matchedUser = data.user;
       const identityText = matchedUser.identity === 'admin' ? '管理员' : '商户';
       message.success(`登录成功！欢迎${identityText}：${username}`);
@@ -63,7 +54,11 @@ const Login = () => {
       //   navigate('/admin/my-hotel');
       // }
     } catch (err) {
-      message.error('登录失败：' + err.message);
+      if (err?.response?.status === 404) {
+        message.error('登录接口未找到，请检查 VITE_API_URL 或服务器反向代理配置');
+        return;
+      }
+      message.error('登录失败，请稍后重试');
     }
   };
 
