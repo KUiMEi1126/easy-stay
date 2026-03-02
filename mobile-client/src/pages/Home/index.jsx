@@ -20,6 +20,25 @@ const provincesList = [
   '广西','西藏','宁夏','新疆','香港','澳门','台湾'
 ];
 
+// 获取后端 API 基础地址（与 api.js 保持一致）
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
+
+// 通过后端 /api/locate 进行 IP 定位（后端调用高德，不暴露 key）
+const locateByServerIp = async () => {
+  const response = await fetch(`${API_BASE}/locate`);
+  if (!response.ok) return '';
+  const data = await response.json();
+  return data?.success ? (data.province || '') : '';
+};
+
+// 通过后端 /api/locate/regeo 进行逆地理编码（GPS 坐标 → 省份）
+const locateByServerRegeo = async (longitude, latitude) => {
+  const response = await fetch(`${API_BASE}/locate/regeo?lng=${longitude}&lat=${latitude}`);
+  if (!response.ok) return '';
+  const data = await response.json();
+  return data?.success ? (data.province || '') : '';
+};
+
 const Home = () => {
   const navigate = useNavigate();
 
@@ -92,44 +111,55 @@ const Home = () => {
     localStorage.setItem('userProvince', e.target.value);
   };
 
-  const handleLocate = () => {
-    if (!navigator.geolocation) {
-      alert('当前浏览器不支持定位');
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        fetch(`https://restapi.amap.com/v3/geocode/regeo?output=json&location=${pos.coords.longitude},${pos.coords.latitude}&key=7e2e1e2e2e2e2e2e2e2e2e2e2e2e2e2e`)
-          .then(r => r.json())
-              .then(data => {
-                let prov = data?.regeocode?.addressComponent?.province || '';
-                if (prov) {
-                  // 规范化：去掉常见后缀，如“省”“市”“自治区”“特别行政区”“自治州”
-                  prov = prov.replace(/(省|市|自治区|特别行政区|自治州)$/, '');
-                  // 如果在已知省份列表中，则设置为该省，否则视为定位失败（显示未知）
-                  if (provincesList.includes(prov)) {
-                    setProvince(prov);
-                    try { localStorage.setItem('userProvince', prov); } catch(e) {}
-                  } else {
-                    setProvince(UNKNOWN_PROVINCE);
-                    try { localStorage.removeItem('userProvince'); } catch(e) {}
-                  }
-                } else {
-                  setProvince(UNKNOWN_PROVINCE);
-                  try { localStorage.removeItem('userProvince'); } catch(e) {}
-                }
-              })
-              .catch(() => {
-                // 定位失败：标记为未知地点
-                setProvince(UNKNOWN_PROVINCE);
-                try { localStorage.removeItem('userProvince'); } catch(e) {}
-              });
-      },
-      () => {
-        setProvince(UNKNOWN_PROVINCE);
-        try { localStorage.removeItem('userProvince'); } catch(e) {}
+  const handleLocate = async () => {
+    // 辅助：将解析到的省份写入状态
+    const applyProvince = (prov) => {
+      setProvince(prov);
+      try { localStorage.setItem('userProvince', prov); } catch (e) {}
+    };
+
+    // ---- 第 1 步：尝试 GPS 定位（仅在安全上下文 HTTPS / localhost 下可用）----
+    const isSecure = window.isSecureContext;
+    if (isSecure && navigator.geolocation) {
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 8000,
+            maximumAge: 120000
+          });
+        });
+        const longitude = pos?.coords?.longitude;
+        const latitude = pos?.coords?.latitude;
+
+        if (Number.isFinite(longitude) && Number.isFinite(latitude)) {
+          try {
+            const gpsProvince = await locateByServerRegeo(longitude, latitude);
+            if (gpsProvince) {
+              applyProvince(gpsProvince);
+              return;
+            }
+          } catch (e) {
+            console.log('GPS 逆地理编码失败:', e);
+          }
+        }
+      } catch (gpsErr) {
+        console.log('GPS 定位失败，回退到 IP 定位:', gpsErr?.message || gpsErr?.code);
       }
-    );
+    }
+
+    // ---- 第 2 步：后端 IP 定位（不需要 HTTPS，不需要浏览器权限）----
+    try {
+      const ipProvince = await locateByServerIp();
+      if (ipProvince) {
+        applyProvince(ipProvince);
+        return;
+      }
+    } catch (e) {
+      console.log('IP 定位失败:', e);
+    }
+
+    alert('定位失败，请手动选择目的地');
   };
 
   const handleDateChange = (ranges) => {

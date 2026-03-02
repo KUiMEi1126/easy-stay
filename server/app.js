@@ -20,16 +20,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 const adminRoutes = require('./routes/admin');
 const merchantRoutes = require('./routes/merchant');
 const uploadRoutes = require('./routes/upload');
+const locateRoutes = require('./routes/locate');
 // 3. 路由挂载
 app.use('/api/admin', adminRoutes); // /api/admin/hotels
 app.use('/api/merchant', merchantRoutes); // /api/merchant/my-hotel
 app.use('/api', uploadRoutes);    // /api/upload
+app.use('/api/locate', locateRoutes); // /api/locate (IP定位 + 逆地理编码)
 
 // 仅在 admin-client 已 build 时静态托管并做 SPA 回退
 const distPath = path.join(__dirname, '..', 'admin-client', 'dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
-  app.get('*', (req, res) => {
+  app.use((req, res, next) => {
+    if (req.method !== 'GET') return next();
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
     res.sendFile(path.join(distPath, 'index.html'));
   });
 } else {
