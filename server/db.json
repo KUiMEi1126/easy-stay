@@ -20,6 +20,13 @@
       "password": "$2a$10$lVt3TtuJdvas5FkaY9A3sea/qw//IGkmWkBqzpXZCU4kOqvz65OHa",
       "identity": "merchant",
       "createTime": "2026-02-25T07:37:55.677Z"
+    },
+    {
+      "id": 1772451140624,
+      "username": "kuimei1126",
+      "password": "$2a$10$4zb4FFPnYMxUhIXYqFoN6uQXFpxSfl5OUHFAkXfwcXzB5teO54ZY.",
+      "identity": "merchant",
+      "createTime": "2026-03-02T11:32:20.624Z"
     }
   ],
   "hotels": [
@@ -98,7 +105,7 @@
     },
     {
       "id": 1771736729338,
-      "ownerId": 2,
+      "ownerId": 1771736729338,
       "nameCn": "成都太古里博舍酒店",
       "nameEn": "The Temple House Chengdu",
       "address": "成都市锦江区笔帖式街81号",

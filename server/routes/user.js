@@ -42,7 +42,7 @@ router.post('/register', (req, res) => {
   db.users.push(newUser);
   writeDB(db);
 
-  return res.json({ success: true, user: { username: newUser.username, identity: newUser.identity } });
+  return res.json({ success: true, user: { id: newUser.id, username: newUser.username, identity: newUser.identity } });
 });
 
 // 登录
@@ -66,7 +66,7 @@ router.post('/login', (req, res) => {
     return res.status(401).json({ success: false, message: '用户名或密码错误' });
   }
 
-  return res.json({ success: true, user: { username: user.username, identity: user.identity } });
+  return res.json({ success: true, user: { id: user.id, username: user.username, identity: user.identity } });
 });
 
 module.exports = router;
