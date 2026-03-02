@@ -64,6 +64,7 @@
     },
     {
       "id": 2,
+       "ownerId":1772005075677,
       "nameCn": "杭州西湖柏悦酒店",
       "nameEn": "Park Hyatt Hangzhou",
       "address": "杭州市上城区湖滨路28号",
@@ -97,8 +98,8 @@
       "isOnline": true
     },
     {
-      "id": 1771736729338,
-      "ownerId": 2,
+      "id": 3,
+      "ownerId":1771736729338,
       "nameCn": "成都太古里博舍酒店",
       "nameEn": "The Temple House Chengdu",
       "address": "成都市锦江区笔帖式街81号",
